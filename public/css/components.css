@@ -1,0 +1,99 @@
+/* Document Card */
+.doc-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+}
+
+.doc-card:active {
+  border-color: #3498db;
+}
+
+.doc-card-thumb {
+  width: 100%;
+  height: 180px;
+  background: #e8e8e8;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.doc-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.doc-card-thumb .placeholder {
+  font-size: 32px;
+  color: #bbb;
+}
+
+.doc-card-info {
+  padding: 8px 10px;
+}
+
+.doc-card-title {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc-card-meta {
+  font-size: 11px;
+  color: #999;
+  margin-top: 4px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+}
+
+.doc-card-progress {
+  height: 3px;
+  background: #e0e0e0;
+}
+
+.doc-card-progress-bar {
+  height: 100%;
+  background: #3498db;
+  transition: width 0.3s;
+}
+
+/* Recent documents - horizontal scroll */
+.recent-docs {
+  display: -webkit-flex;
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+  margin: 0 -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.recent-docs .doc-card {
+  min-width: 160px;
+  max-width: 160px;
+  margin-right: 12px;
+  -webkit-flex-shrink: 0;
+  flex-shrink: 0;
+}
+
+.recent-docs .doc-card-thumb {
+  height: 140px;
+}

@@ -1,0 +1,86 @@
+var Toolbar = (function() {
+
+  function create(options) {
+    var el = document.createElement('div');
+    el.className = 'viewer-toolbar';
+
+    var left = document.createElement('div');
+    left.className = 'viewer-toolbar-left';
+
+    var backBtn = document.createElement('button');
+    backBtn.className = 'viewer-back-btn';
+    backBtn.textContent = 'Back';
+    backBtn.addEventListener('click', function() {
+      if (options.onBack) options.onBack();
+    });
+    left.appendChild(backBtn);
+
+    var center = document.createElement('div');
+    center.className = 'viewer-toolbar-center';
+
+    var pageInfo = document.createElement('span');
+    pageInfo.className = 'viewer-page-info';
+
+    var pageInput = document.createElement('input');
+    pageInput.className = 'viewer-page-input';
+    pageInput.type = 'number';
+    pageInput.min = '1';
+    pageInput.max = String(options.totalPages || 1);
+    pageInput.value = String(options.currentPage || 1);
+
+    var totalLabel = document.createElement('span');
+    totalLabel.className = 'viewer-page-info';
+    totalLabel.textContent = ' / ' + (options.totalPages || 1);
+
+    pageInput.addEventListener('change', function() {
+      var val = parseInt(pageInput.value, 10);
+      if (val >= 1 && val <= options.totalPages && options.onPageChange) {
+        options.onPageChange(val);
+      }
+    });
+
+    // Prevent keyboard from messing with page on blur
+    pageInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.keyCode === 13) {
+        pageInput.blur();
+      }
+    });
+
+    center.appendChild(pageInput);
+    center.appendChild(totalLabel);
+
+    var right = document.createElement('div');
+    right.className = 'viewer-toolbar-right';
+
+    var downloadBtn = document.createElement('a');
+    downloadBtn.className = 'viewer-download-btn';
+    downloadBtn.textContent = 'Download';
+    downloadBtn.href = options.downloadUrl || '#';
+    right.appendChild(downloadBtn);
+
+    el.appendChild(left);
+    el.appendChild(center);
+    el.appendChild(right);
+
+    return {
+      el: el,
+      setPage: function(page) {
+        pageInput.value = String(page);
+      },
+      show: function() {
+        el.classList.remove('hidden');
+      },
+      hide: function() {
+        el.classList.add('hidden');
+      },
+      toggle: function() {
+        el.classList.toggle('hidden');
+      },
+      isHidden: function() {
+        return el.classList.contains('hidden');
+      },
+    };
+  }
+
+  return { create: create };
+})();

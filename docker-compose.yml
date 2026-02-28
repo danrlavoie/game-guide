@@ -1,0 +1,12 @@
+services:
+  game-guide:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - "/mnt/user/Game books magazines manuals:/documents:ro"
+      - game-guide-data:/data
+    restart: unless-stopped
+
+volumes:
+  game-guide-data:

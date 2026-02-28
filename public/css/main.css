@@ -1,0 +1,218 @@
+/* Layout */
+#app {
+  min-height: 100%;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+}
+
+.page {
+  -webkit-flex: 1;
+  flex: 1;
+  padding: 16px;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  background: #2c3e50;
+  color: white;
+  padding: 12px 16px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+}
+
+.header h1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.header a {
+  color: white;
+}
+
+.header-back {
+  font-size: 14px;
+  padding: 4px 8px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
+}
+
+/* Search bar */
+.search-bar {
+  padding: 12px 16px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px; /* Prevents iOS zoom on focus */
+  background: #f8f8f8;
+}
+
+.search-bar input:focus {
+  border-color: #3498db;
+  background: white;
+}
+
+/* Section headers */
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #555;
+  margin: 20px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Breadcrumbs */
+.breadcrumbs {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  padding: 8px 0;
+  font-size: 13px;
+  color: #888;
+}
+
+.breadcrumbs a {
+  color: #3498db;
+}
+
+.breadcrumbs span {
+  margin: 0 6px;
+}
+
+/* Folder list */
+.folder-list {
+  margin-bottom: 16px;
+}
+
+.folder-item {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  border: 1px solid #e0e0e0;
+}
+
+.folder-item:active {
+  background: #f0f0f0;
+}
+
+.folder-icon {
+  font-size: 24px;
+  margin-right: 12px;
+  width: 32px;
+  text-align: center;
+}
+
+.folder-name {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Document grid */
+.doc-grid {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin: -6px;
+}
+
+.doc-grid .doc-card {
+  width: calc(50% - 12px);
+  margin: 6px;
+}
+
+@media (min-width: 600px) {
+  .doc-grid .doc-card {
+    width: calc(33.333% - 12px);
+  }
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background: #3498db;
+  color: white;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+}
+
+.btn:active {
+  background: #2980b9;
+}
+
+.btn-secondary {
+  background: #95a5a6;
+}
+
+.btn-secondary:active {
+  background: #7f8c8d;
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+}
+
+/* Load more */
+.load-more {
+  text-align: center;
+  padding: 16px;
+}
+
+/* Empty states */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.empty-state p {
+  font-size: 15px;
+}
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+
+/* Scan button */
+.scan-btn {
+  font-size: 13px;
+  padding: 4px 12px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
+  cursor: pointer;
+  color: white;
+}
+
+.scan-btn:active {
+  background: rgba(255,255,255,0.3);
+}

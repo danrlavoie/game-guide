@@ -1,0 +1,17 @@
+{
+  "name": "game-guide",
+  "version": "1.0.0",
+  "description": "PDF/CBZ reader web app for legacy iPad, served over LAN",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.21.0",
+    "sharp": "^0.33.0",
+    "uuid": "^10.0.0"
+  }
+}
