@@ -49,11 +49,18 @@
 ## Data Flow
 
 ### Scanning Pipeline
-1. On startup (+ manual trigger + optional timer), walk documents directory
-2. Collect *.pdf, *.cbz, and *.cbr files, compute relative paths + partial hash (first 64KB SHA-256)
-3. Sync with DB: insert new, update changed (invalidate cache), remove deleted
-4. Extract page count via `pdfinfo` (PDF), `unzip -l` (CBZ), or `unrar lb` (CBR)
-5. Queue thumbnail generation for new documents
+1. On startup (+ manual trigger), walk documents directory, collecting file paths, sizes, and mtimes
+2. Compare each file against the DB using size + mtime for fast change detection
+   - **Unchanged** (size + mtime match): skip entirely
+   - **New file**: insert into DB without hashing (nothing to compare against)
+   - **Size or mtime changed**: compute partial hash (first 64KB SHA-256), compare, update if different
+3. Remove DB entries for files no longer on disk; invalidate cached pages/thumbnails for changed/removed files
+4. Return catalog results immediately (the UI can show documents right away)
+5. **Background processing** (non-blocking): extract page counts and generate thumbnails for new/changed documents
+   - Page counts: `pdfinfo` (PDF), `unzip -l` (CBZ), `unrar lb` (CBR) — batches of 50 in parallel
+   - Thumbnails: first page rendered at 72 DPI and resized via `sharp` — batches of 5 in parallel
+
+See `docs/performance.md` for detailed analysis of the scanning pipeline optimizations.
 
 ### On-Demand Page Rendering
 1. Client requests `/api/documents/:id/pages/:pageNum`
@@ -102,6 +109,7 @@ These constraints shaped the frontend architecture:
 | page_count | INTEGER | Number of pages |
 | parent_folder | TEXT | Parent directory path |
 | file_hash | TEXT | SHA-256 of first 64KB for change detection |
+| file_mtime | REAL | File modification time (ms) for fast change detection |
 | thumbnail_generated | INTEGER | Boolean (0/1) |
 | created_at | TEXT | ISO timestamp |
 | updated_at | TEXT | ISO timestamp |

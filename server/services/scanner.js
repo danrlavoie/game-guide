@@ -9,124 +9,135 @@ var thumbnail = require('./thumbnail');
 var SUPPORTED_EXTENSIONS = ['.pdf', '.cbz', '.cbr'];
 
 function scan() {
-  return new Promise(function(resolve, reject) {
-    try {
-      var db = getDb();
-      var documentsPath = config.documentsPath;
+  try {
+    var db = getDb();
+    var documentsPath = config.documentsPath;
 
-      if (!fs.existsSync(documentsPath)) {
-        return reject(new Error('Documents path does not exist: ' + documentsPath));
-      }
+    if (!fs.existsSync(documentsPath)) {
+      return Promise.reject(new Error('Documents path does not exist: ' + documentsPath));
+    }
 
-      // Walk directory and collect files
-      console.log('Scanning documents directory...');
-      var files = walkDirectory(documentsPath, documentsPath);
-      console.log('Found ' + files.length + ' documents');
+    // Walk directory and collect files with stat info
+    console.log('Scanning documents directory...');
+    var files = walkDirectory(documentsPath, documentsPath);
+    console.log('Found ' + files.length + ' documents');
 
-      // Get existing documents from DB
-      var existing = {};
-      db.prepare('SELECT id, file_path, file_hash FROM documents').all()
-        .forEach(function(row) {
-          existing[row.file_path] = row;
-        });
+    // Get existing documents from DB (include size + mtime for fast comparison)
+    var existing = {};
+    db.prepare('SELECT id, file_path, file_hash, file_size, file_mtime FROM documents').all()
+      .forEach(function(row) {
+        existing[row.file_path] = row;
+      });
 
-      var added = 0;
-      var updated = 0;
-      var removed = 0;
-      var newDocIds = [];
+    var added = 0;
+    var updated = 0;
+    var removed = 0;
+    var unchanged = 0;
+    var newDocIds = [];
 
-      // Process found files
-      var seenPaths = {};
-      var insertStmt = db.prepare('\
-        INSERT INTO documents (file_path, file_name, file_type, file_size, page_count, parent_folder, file_hash) \
-        VALUES (?, ?, ?, ?, ?, ?, ?)\
-      ');
-      var updateStmt = db.prepare('\
-        UPDATE documents SET file_size = ?, page_count = ?, file_hash = ?, \
-        thumbnail_generated = 0, updated_at = datetime(\'now\') WHERE id = ?\
-      ');
+    // Process found files
+    var seenPaths = {};
+    var insertStmt = db.prepare('\
+      INSERT INTO documents (file_path, file_name, file_type, file_size, page_count, parent_folder, file_hash, file_mtime) \
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)\
+    ');
+    var updateStmt = db.prepare('\
+      UPDATE documents SET file_size = ?, page_count = ?, file_hash = ?, file_mtime = ?, \
+      thumbnail_generated = 0, updated_at = datetime(\'now\') WHERE id = ?\
+    ');
 
-      var processed = 0;
-      var fileTotal = files.length;
+    var processed = 0;
+    var fileTotal = files.length;
 
-      var transaction = db.transaction(function() {
-        files.forEach(function(file) {
-          seenPaths[file.relativePath] = true;
+    var transaction = db.transaction(function() {
+      files.forEach(function(file) {
+        seenPaths[file.relativePath] = true;
+        var ext = path.extname(file.relativePath).toLowerCase();
+        var fileType = ext === '.pdf' ? 'pdf' : (ext === '.cbr' ? 'cbr' : 'cbz');
+        var parentFolder = path.dirname(file.relativePath);
+        if (parentFolder === '.') parentFolder = '';
+
+        var existingDoc = existing[file.relativePath];
+
+        if (!existingDoc) {
+          // New file — insert without hashing (nothing to compare against)
+          var info = insertStmt.run(
+            file.relativePath,
+            path.basename(file.relativePath),
+            fileType,
+            file.size,
+            0, // page_count filled async
+            parentFolder,
+            null, // hash computed lazily if needed later
+            file.mtime
+          );
+          newDocIds.push({ id: info.lastInsertRowid, fullPath: file.fullPath, type: fileType });
+          added++;
+        } else if (existingDoc.file_size === file.size && existingDoc.file_mtime === file.mtime) {
+          // Size and mtime match — skip entirely (no hash needed)
+          unchanged++;
+        } else {
+          // Size or mtime changed — compute hash and compare
           var hash = computePartialHash(file.fullPath);
-          var ext = path.extname(file.relativePath).toLowerCase();
-          var fileType = ext === '.pdf' ? 'pdf' : (ext === '.cbr' ? 'cbr' : 'cbz');
-          var stat = fs.statSync(file.fullPath);
-          var parentFolder = path.dirname(file.relativePath);
-          if (parentFolder === '.') parentFolder = '';
-
-          var existingDoc = existing[file.relativePath];
-
-          if (!existingDoc) {
-            // New file
-            var info = insertStmt.run(
-              file.relativePath,
-              path.basename(file.relativePath),
-              fileType,
-              stat.size,
-              0, // page_count filled async
-              parentFolder,
-              hash
-            );
-            newDocIds.push({ id: info.lastInsertRowid, fullPath: file.fullPath, type: fileType });
-            added++;
-          } else if (existingDoc.file_hash !== hash) {
-            // Changed file
-            updateStmt.run(stat.size, 0, hash, existingDoc.id);
+          if (existingDoc.file_hash && existingDoc.file_hash === hash) {
+            // Hash matches despite mtime change (e.g. file touched but not modified)
+            // Update mtime so we skip next time
+            db.prepare('UPDATE documents SET file_mtime = ? WHERE id = ?').run(file.mtime, existingDoc.id);
+            unchanged++;
+          } else {
+            // Actually changed
+            updateStmt.run(file.size, 0, hash, file.mtime, existingDoc.id);
             newDocIds.push({ id: existingDoc.id, fullPath: file.fullPath, type: fileType });
-            // Invalidate cached pages
             invalidateCache(existingDoc.id);
             updated++;
           }
+        }
 
-          processed++;
-          if (processed % 100 === 0 || processed === fileTotal) {
-            process.stdout.write('\r  Cataloging: ' + processed + ' / ' + fileTotal +
-              ' (' + added + ' new, ' + updated + ' updated)');
-          }
-        });
-
-        if (fileTotal > 0) process.stdout.write('\n');
-
-        // Remove documents that no longer exist on disk
-        Object.keys(existing).forEach(function(filePath) {
-          if (!seenPaths[filePath]) {
-            db.prepare('DELETE FROM documents WHERE id = ?').run(existing[filePath].id);
-            invalidateCache(existing[filePath].id);
-            removed++;
-          }
-        });
+        processed++;
+        if (processed % 100 === 0 || processed === fileTotal) {
+          process.stdout.write('\r  Cataloging: ' + processed + ' / ' + fileTotal +
+            ' (' + added + ' new, ' + updated + ' updated, ' + unchanged + ' unchanged)');
+        }
       });
 
-      transaction();
+      if (fileTotal > 0) process.stdout.write('\n');
 
-      console.log('Cataloged: ' + added + ' new, ' + updated + ' changed, ' + removed + ' removed');
-
-      if (newDocIds.length === 0) {
-        return resolve({ added: added, updated: updated, removed: removed, total: files.length });
-      }
-
-      // Update page counts
-      console.log('Extracting page counts for ' + newDocIds.length + ' documents...');
-      updatePageCounts(newDocIds).then(function() {
-        console.log('Page counts complete. Generating thumbnails...');
-        return thumbnail.generateBatch(newDocIds);
-      }).then(function() {
-        console.log('Thumbnails complete.');
-        resolve({ added: added, updated: updated, removed: removed, total: files.length });
-      }).catch(function(err) {
-        console.error('Post-scan processing error:', err);
-        resolve({ added: added, updated: updated, removed: removed, total: files.length });
+      // Remove documents that no longer exist on disk
+      Object.keys(existing).forEach(function(filePath) {
+        if (!seenPaths[filePath]) {
+          db.prepare('DELETE FROM documents WHERE id = ?').run(existing[filePath].id);
+          invalidateCache(existing[filePath].id);
+          removed++;
+        }
       });
+    });
 
-    } catch (err) {
-      reject(err);
+    transaction();
+
+    console.log('Cataloged: ' + added + ' new, ' + updated + ' changed, ' + removed + ' removed, ' + unchanged + ' unchanged');
+
+    var result = { added: added, updated: updated, removed: removed, total: files.length };
+
+    if (newDocIds.length === 0) {
+      return Promise.resolve({ result: result, backgroundWork: Promise.resolve() });
     }
-  });
+
+    // Defer page counts + thumbnails to background
+    console.log('Background processing ' + newDocIds.length + ' documents (page counts + thumbnails)...');
+    var backgroundWork = updatePageCounts(newDocIds).then(function() {
+      console.log('Page counts complete. Generating thumbnails...');
+      return thumbnail.generateBatch(newDocIds);
+    }).then(function() {
+      console.log('Background processing complete.');
+    }).catch(function(err) {
+      console.error('Background processing error:', err);
+    });
+
+    return Promise.resolve({ result: result, backgroundWork: backgroundWork });
+
+  } catch (err) {
+    return Promise.reject(err);
+  }
 }
 
 function walkDirectory(dir, rootDir) {
@@ -149,7 +160,17 @@ function walkDirectory(dir, rootDir) {
       var ext = path.extname(entry.name).toLowerCase();
       if (SUPPORTED_EXTENSIONS.indexOf(ext) !== -1) {
         var relativePath = path.relative(rootDir, fullPath);
-        results.push({ fullPath: fullPath, relativePath: relativePath });
+        try {
+          var stat = fs.statSync(fullPath);
+          results.push({
+            fullPath: fullPath,
+            relativePath: relativePath,
+            size: stat.size,
+            mtime: stat.mtimeMs
+          });
+        } catch (err) {
+          console.error('Cannot stat file:', fullPath, err.message);
+        }
       }
     }
   });
@@ -176,9 +197,8 @@ function updatePageCounts(docs) {
   var done = 0;
   var total = docs.length;
 
-  // Process in batches of 10 to avoid overwhelming the system
   var chain = Promise.resolve();
-  var batchSize = 10;
+  var batchSize = 50;
 
   for (var i = 0; i < docs.length; i += batchSize) {
     (function(batch) {
@@ -188,7 +208,7 @@ function updatePageCounts(docs) {
             .then(function(count) {
               updateStmt.run(count, doc.id);
               done++;
-              if (done % 25 === 0 || done === total) {
+              if (done % 50 === 0 || done === total) {
                 process.stdout.write('\r  Page counts: ' + done + ' / ' + total);
               }
             })

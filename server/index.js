@@ -41,9 +41,12 @@ app.listen(config.port, function() {
 
   // Run initial scan on startup
   var scanner = require('./services/scanner');
-  scanner.scan().then(function(result) {
-    console.log('Initial scan complete: ' + result.added + ' added, ' +
-      result.updated + ' updated, ' + result.removed + ' removed');
+  scanner.scan().then(function(scanResult) {
+    var r = scanResult.result;
+    console.log('Initial scan complete: ' + r.added + ' added, ' +
+      r.updated + ' updated, ' + r.removed + ' removed');
+    // Background work (page counts + thumbnails) continues asynchronously
+    return scanResult.backgroundWork;
   }).catch(function(err) {
     console.error('Initial scan failed:', err.message);
   });

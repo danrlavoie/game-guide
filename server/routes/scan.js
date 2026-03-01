@@ -11,9 +11,16 @@ router.post('/scan', function(req, res) {
 
   scanning = true;
   scanner.scan()
-    .then(function(result) {
-      scanning = false;
-      res.json(result);
+    .then(function(scanResult) {
+      // Respond immediately with catalog results
+      res.json(scanResult.result);
+
+      // Background work continues; clear flag when done
+      scanResult.backgroundWork.then(function() {
+        scanning = false;
+      }).catch(function() {
+        scanning = false;
+      });
     })
     .catch(function(err) {
       scanning = false;

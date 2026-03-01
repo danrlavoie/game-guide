@@ -18,6 +18,7 @@ function getDb() {
   db.pragma('foreign_keys = ON');
 
   initSchema();
+  migrateSchema();
 
   return db;
 }
@@ -33,6 +34,7 @@ function initSchema() {
       page_count INTEGER DEFAULT 0,\
       parent_folder TEXT NOT NULL DEFAULT \'\',\
       file_hash TEXT,\
+      file_mtime REAL,\
       thumbnail_generated INTEGER DEFAULT 0,\
       created_at TEXT DEFAULT (datetime(\'now\')),\
       updated_at TEXT DEFAULT (datetime(\'now\'))\
@@ -69,6 +71,15 @@ function initSchema() {
       FOREIGN KEY (device_id) REFERENCES devices(id)\
     );\
   ');
+}
+
+function migrateSchema() {
+  // Add file_mtime column if missing (migration for existing databases)
+  try {
+    db.exec('ALTER TABLE documents ADD COLUMN file_mtime REAL');
+  } catch (err) {
+    // Column already exists — ignore
+  }
 }
 
 module.exports = { getDb };

@@ -154,30 +154,37 @@ function generateBatch(docs) {
   var done = 0;
   var total = docs.length;
 
-  // Process thumbnails sequentially to avoid overwhelming the system
+  // Ensure thumbnails directory exists once
+  fs.mkdirSync(config.thumbnailsPath, { recursive: true });
+
+  // Process thumbnails in parallel batches of 5
   var chain = Promise.resolve();
+  var batchSize = 5;
 
-  docs.forEach(function(doc) {
-    chain = chain.then(function() {
-      var thumbPath = path.join(config.thumbnailsPath, doc.id + '.jpg');
-      fs.mkdirSync(config.thumbnailsPath, { recursive: true });
+  for (var i = 0; i < docs.length; i += batchSize) {
+    (function(batch) {
+      chain = chain.then(function() {
+        return Promise.all(batch.map(function(doc) {
+          var thumbPath = path.join(config.thumbnailsPath, doc.id + '.jpg');
 
-      return generateThumbnail(
-        { file_type: doc.type, id: doc.id },
-        doc.fullPath,
-        thumbPath
-      ).then(function() {
-        updateStmt.run(doc.id);
-        done++;
-        if (done % 10 === 0 || done === total) {
-          process.stdout.write('\r  Thumbnails: ' + done + ' / ' + total);
-        }
-      }).catch(function(err) {
-        done++;
-        console.error('\nThumbnail generation failed for', doc.fullPath, err.message);
+          return generateThumbnail(
+            { file_type: doc.type, id: doc.id },
+            doc.fullPath,
+            thumbPath
+          ).then(function() {
+            updateStmt.run(doc.id);
+            done++;
+            if (done % 10 === 0 || done === total) {
+              process.stdout.write('\r  Thumbnails: ' + done + ' / ' + total);
+            }
+          }).catch(function(err) {
+            done++;
+            console.error('\nThumbnail generation failed for', doc.fullPath, err.message);
+          });
+        }));
       });
-    });
-  });
+    })(docs.slice(i, i + batchSize));
+  }
 
   return chain.then(function() {
     if (total > 0) process.stdout.write('\n');
