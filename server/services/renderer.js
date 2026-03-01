@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var config = require('../config');
 var { execAsync } = require('../utils/exec');
+var { isZipFile } = require('../utils/archive');
 
 function getPage(doc, fullPath, pageNum) {
   var cacheDir = path.join(config.pagesPath, String(doc.id));
@@ -110,6 +111,10 @@ function renderCbzPage(cbzPath, cacheDir, pageNum) {
 }
 
 function renderCbrPage(cbrPath, cacheDir, pageNum) {
+  if (isZipFile(cbrPath)) {
+    return renderCbzPage(cbrPath, cacheDir, pageNum);
+  }
+
   var escapedPath = cbrPath.replace(/"/g, '\\"');
 
   // List files in CBR, filter to images, sort by name

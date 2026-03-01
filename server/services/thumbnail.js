@@ -1,9 +1,11 @@
 var fs = require('fs');
 var path = require('path');
 var sharp = require('sharp');
+sharp.cache(false); // Prevent decoded image cache from accumulating over large batches
 var config = require('../config');
 var { getDb } = require('../db');
 var { execAsync } = require('../utils/exec');
+var { isZipFile } = require('../utils/archive');
 
 function getThumbnail(doc, fullPath) {
   var thumbPath = path.join(config.thumbnailsPath, doc.id + '.jpg');
@@ -109,6 +111,10 @@ function generateCbzThumbnail(cbzPath, thumbPath) {
 }
 
 function generateCbrThumbnail(cbrPath, thumbPath) {
+  if (isZipFile(cbrPath)) {
+    return generateCbzThumbnail(cbrPath, thumbPath);
+  }
+
   var escapedPath = cbrPath.replace(/"/g, '\\"');
   var tempDir = path.dirname(thumbPath);
 

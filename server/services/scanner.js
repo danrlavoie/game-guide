@@ -4,6 +4,7 @@ var crypto = require('crypto');
 var { getDb } = require('../db');
 var config = require('../config');
 var { execAsync } = require('../utils/exec');
+var { isZipFile } = require('../utils/archive');
 var thumbnail = require('./thumbnail');
 
 var SUPPORTED_EXTENSIONS = ['.pdf', '.cbz', '.cbr', '.txt'];
@@ -237,8 +238,20 @@ function getPageCount(filePath, fileType) {
         return match ? parseInt(match[1], 10) : 0;
       });
   } else if (fileType === 'cbr') {
-    // CBR: count image files in RAR
-    return execAsync('unrar lb "' + filePath.replace(/"/g, '\\"') + '"')
+    var escapedCbr = filePath.replace(/"/g, '\\"');
+    if (isZipFile(filePath)) {
+      // Mislabeled ZIP with .cbr extension — use unzip
+      return execAsync('unzip -l "' + escapedCbr + '"')
+        .then(function(stdout) {
+          return countImageLines(stdout);
+        })
+        .catch(function(err) {
+          console.error('\nCBR (ZIP) read error for ' + path.basename(filePath) + ': ' + (err.message || '').split('\n')[0]);
+          return 0;
+        });
+    }
+    // Real RAR archive
+    return execAsync('unrar lb "' + escapedCbr + '"')
       .then(function(stdout) {
         return countImageLines(stdout);
       })
