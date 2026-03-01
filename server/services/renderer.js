@@ -2,7 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var config = require('../config');
 var { execAsync, shellEscape } = require('../utils/exec');
-var { isZipFile } = require('../utils/archive');
+var { isZipFile, isRarFile } = require('../utils/archive');
 
 function getPage(doc, fullPath, pageNum) {
   var cacheDir = path.join(config.pagesPath, String(doc.id));
@@ -58,6 +58,10 @@ function renderPdfPage(pdfPath, cacheDir, pageNum) {
 }
 
 function renderCbzPage(cbzPath, cacheDir, pageNum) {
+  if (isRarFile(cbzPath)) {
+    return renderCbrPage(cbzPath, cacheDir, pageNum);
+  }
+
   var escapedPath = shellEscape(cbzPath);
 
   // List files in CBZ, filter to images, sort by name

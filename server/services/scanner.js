@@ -4,7 +4,7 @@ var crypto = require('crypto');
 var { getDb } = require('../db');
 var config = require('../config');
 var { execAsync, shellEscape } = require('../utils/exec');
-var { isZipFile } = require('../utils/archive');
+var { isZipFile, isRarFile } = require('../utils/archive');
 var thumbnail = require('./thumbnail');
 
 var SUPPORTED_EXTENSIONS = ['.pdf', '.cbz', '.cbr', '.txt'];
@@ -260,7 +260,17 @@ function getPageCount(filePath, fileType) {
         return 0;
       });
   } else {
-    // CBZ: count image files in ZIP
+    // CBZ: count image files in ZIP (or RAR if mislabeled)
+    if (isRarFile(filePath)) {
+      return execAsync('unrar lb "' + shellEscape(filePath) + '"')
+        .then(function(stdout) {
+          return countImageLines(stdout);
+        })
+        .catch(function(err) {
+          console.error('\nCBZ (RAR) read error for ' + path.basename(filePath) + ': ' + (err.message || '').split('\n')[0]);
+          return 0;
+        });
+    }
     return execAsync('unzip -l "' + shellEscape(filePath) + '"')
       .then(function(stdout) {
         return countImageLines(stdout);

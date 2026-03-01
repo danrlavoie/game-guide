@@ -5,7 +5,7 @@ sharp.cache(false); // Prevent decoded image cache from accumulating over large 
 var config = require('../config');
 var { getDb } = require('../db');
 var { execAsync, shellEscape } = require('../utils/exec');
-var { isZipFile } = require('../utils/archive');
+var { isZipFile, isRarFile } = require('../utils/archive');
 
 function getThumbnail(doc, fullPath) {
   var thumbPath = path.join(config.thumbnailsPath, doc.id + '.jpg');
@@ -67,6 +67,10 @@ function generatePdfThumbnail(pdfPath, thumbPath) {
 }
 
 function generateCbzThumbnail(cbzPath, thumbPath) {
+  if (isRarFile(cbzPath)) {
+    return generateCbrThumbnail(cbzPath, thumbPath);
+  }
+
   var escapedPath = shellEscape(cbzPath);
   var tempDir = path.dirname(thumbPath);
 
