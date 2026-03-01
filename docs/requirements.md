@@ -33,7 +33,8 @@
 
 ### File Support
 - PDF files (rendered via `pdftoppm`)
-- CBZ files (comic book ZIP archives)
+- CBZ files (comic book ZIP archives, extracted via `unzip`)
+- CBR files (comic book RAR archives, extracted via `unrar`)
 
 ## Non-Functional Requirements
 - LAN-only access (no internet required, no authentication)

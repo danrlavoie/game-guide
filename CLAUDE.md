@@ -1,7 +1,7 @@
 # Game Guide - AI Agent Instructions
 
 ## Project Overview
-A client-server web app that serves PDF and CBZ game manuals/strategy guides to an old iPad 4th gen (iOS 10.3.3, Safari 10) over LAN. Server-side rendering converts pages to JPEG images; the frontend is a vanilla JS single-page app.
+A client-server web app that serves PDF, CBZ, and CBR game manuals/strategy guides to an old iPad 4th gen (iOS 10.3.3, Safari 10) over LAN. Server-side rendering converts pages to JPEG images; the frontend is a vanilla JS single-page app.
 
 ## Key Directories
 - `server/` - Node.js + Express backend

@@ -1,13 +1,14 @@
 # Game Guide
 
-A PDF/CBZ reader web app designed for reading game manuals and strategy guides on a legacy iPad 4th gen (iOS 10.3.3) over LAN. The server renders PDF pages to JPEG images, so the iPad just displays `<img>` tags - no heavy client-side processing.
+A PDF/CBZ/CBR reader web app designed for reading game manuals and strategy guides on a legacy iPad 4th gen (iOS 10.3.3) over LAN. The server renders PDF pages to JPEG images, so the iPad just displays `<img>` tags - no heavy client-side processing.
 
 ## Quick Start
 
 ### Prerequisites
 - Node.js 20+
 - `poppler-utils` installed (`pdftoppm`, `pdfinfo`)
-- A directory of PDF/CBZ files to serve
+- `unrar` installed (for CBR support)
+- A directory of PDF/CBZ/CBR files to serve
 
 ### Local Development
 
@@ -59,7 +60,7 @@ docs/             # Architecture and requirements docs
 
 ## How It Works
 
-1. **Scanning:** On startup, the server scans the documents directory for PDF/CBZ files and catalogs them in SQLite
+1. **Scanning:** On startup, the server scans the documents directory for PDF/CBZ/CBR files and catalogs them in SQLite
 2. **Browsing:** The web UI shows folders and documents with thumbnail previews
 3. **Reading:** When you open a document, pages are rendered server-side to JPEG and streamed to the browser as `<img>` tags
 4. **Progress:** Your reading position is saved automatically per device (identified by cookie)

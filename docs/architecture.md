@@ -27,7 +27,7 @@
 │                                                 │
 │  ┌──────────────┐    ┌────────────────────┐     │
 │  │  Express      │    │  /documents (ro)   │     │
-│  │  Server       │───>│  PDF/CBZ files     │     │
+│  │  Server       │───>│  PDF/CBZ/CBR files  │     │
 │  │  Port 3000    │    └────────────────────┘     │
 │  │               │                               │
 │  │  - Static     │    ┌────────────────────┐     │
@@ -50,9 +50,9 @@
 
 ### Scanning Pipeline
 1. On startup (+ manual trigger + optional timer), walk documents directory
-2. Collect *.pdf and *.cbz files, compute relative paths + partial hash (first 64KB SHA-256)
+2. Collect *.pdf, *.cbz, and *.cbr files, compute relative paths + partial hash (first 64KB SHA-256)
 3. Sync with DB: insert new, update changed (invalidate cache), remove deleted
-4. Extract page count via `pdfinfo` (PDF) or ZIP entry count (CBZ)
+4. Extract page count via `pdfinfo` (PDF), `unzip -l` (CBZ), or `unrar lb` (CBR)
 5. Queue thumbnail generation for new documents
 
 ### On-Demand Page Rendering
@@ -60,7 +60,8 @@
 2. Check disk cache (`data/pages/<doc_id>/<page>.jpg`)
 3. If cached, serve directly. If not:
    - PDF: Run `pdftoppm` for single page at 150 DPI -> JPEG
-   - CBZ: Extract image from ZIP archive
+   - CBZ: Extract image from ZIP archive via `unzip`
+   - CBR: Extract image from RAR archive via `unrar`
 4. Save to cache, serve response
 
 ### Device Identification
@@ -90,7 +91,7 @@ These constraints shaped the frontend architecture:
 | id | INTEGER PK | Auto-increment |
 | file_path | TEXT UNIQUE | Relative path from documents root |
 | file_name | TEXT | Display name |
-| file_type | TEXT | 'pdf' or 'cbz' |
+| file_type | TEXT | 'pdf', 'cbz', or 'cbr' |
 | file_size | INTEGER | Bytes |
 | page_count | INTEGER | Number of pages |
 | parent_folder | TEXT | Parent directory path |
