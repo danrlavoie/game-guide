@@ -10,7 +10,7 @@ A client-server web app that serves PDF, CBZ, and CBR game manuals/strategy guid
   - `server/middleware/` - Express middleware (device identification)
   - `server/utils/` - Shared utilities
 - `public/` - Static frontend served by Express
-  - `public/js/pages/` - Page-level view modules (home, browse, search, viewer)
+  - `public/js/pages/` - Page-level view modules (home, browse, search, viewer, settings)
   - `public/js/components/` - Reusable UI components
   - `public/css/` - Stylesheets
 - `docs/` - Architecture and requirements documentation
@@ -23,6 +23,7 @@ A client-server web app that serves PDF, CBZ, and CBR game manuals/strategy guid
 - **Safe alternatives:** Use ternary operators, `||` for defaults, bracket notation for property access
 - **No canvas rendering:** Use `<img>` tags for page display to stay under Safari's 5-megapixel canvas limit
 - **CSS:** No CSS Grid (Safari 10 has partial support). Use Flexbox for layouts.
+- **Theming:** All colors use CSS custom properties (`var(--name)`). Light defaults on `:root`, dark overrides on `[data-theme="dark"]`. Viewer CSS is excluded (always dark).
 
 ## Safari 10 Compatibility - APIs to AVOID
 - Optional chaining (`?.`) and nullish coalescing (`??`)
@@ -41,7 +42,7 @@ A client-server web app that serves PDF, CBZ, and CBR game manuals/strategy guid
 ## Database
 - SQLite at `data/game-guide.db`
 - Schema defined in `server/db.js`
-- Tables: `documents`, `devices`, `reading_progress`
+- Tables: `documents`, `devices`, `reading_progress`, `device_settings`
 
 ## Architecture Decisions - Do NOT Change
 - Server-side PDF rendering via `pdftoppm` (not PDF.js) - critical for iPad compatibility

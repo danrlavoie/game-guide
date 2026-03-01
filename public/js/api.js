@@ -63,5 +63,13 @@ var API = (function() {
     triggerScan: function() {
       return request('POST', '/api/scan');
     },
+
+    getSettings: function() {
+      return request('GET', '/api/settings');
+    },
+
+    saveSetting: function(key, value) {
+      return request('PUT', '/api/settings', { key: key, value: value });
+    },
   };
 })();

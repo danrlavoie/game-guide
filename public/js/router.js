@@ -27,6 +27,8 @@ var Router = (function() {
       var docId = hash.substring('#/view/'.length);
       currentCleanup = ViewerPage.cleanup;
       ViewerPage.render(app, docId);
+    } else if (hash === '#/settings') {
+      SettingsPage.render(app);
     } else if (hash.indexOf('#/search') === 0) {
       var queryMatch = hash.match(/[?&]q=([^&]*)/);
       var query = queryMatch ? decodeURIComponent(queryMatch[1]) : '';

@@ -31,6 +31,13 @@
 - Resume reading from last position
 - Per-device tracking (cookie-based, no login)
 
+### Settings
+- Settings page accessible from home screen header
+- Dark/light mode toggle with iOS-style switch
+- Per-device settings stored in database (key-value)
+- Theme persists across sessions with no flash of wrong theme on load
+- CSS custom properties for theming; viewer always uses its own dark styling
+
 ### File Support
 - PDF files (rendered via `pdftoppm`)
 - CBZ files (comic book ZIP archives, extracted via `unzip`)
@@ -44,11 +51,11 @@
 - Pages must load in under 2 seconds over LAN
 - Viewer must not crash Safari (stay under memory limits)
 
-## Future Features (Not in v1)
+## Future Features
 - Favorites / bookmarks
 - Notes and annotations
-- Dark mode
 - Chapter navigation (PDF table of contents)
 - Related documents grouping
 - Plain text (.txt) file support
 - Landscape / two-page spread mode
+- Additional user settings (font size, page quality, etc.)

@@ -67,7 +67,13 @@
 ### Device Identification
 - No login. UUID stored in persistent cookie (10-year expiry)
 - Falls back to IP address if cookies fail
-- Tracks reading progress and recently viewed
+- Tracks reading progress, recently viewed, and per-device settings
+
+### Theming
+- CSS custom properties (`:root` for light, `[data-theme="dark"]` for dark)
+- Theme preference stored per device in `device_settings` table
+- FOUC prevention via synchronous XHR in `<head>` that fetches theme before first paint
+- Viewer page is excluded from theming (always uses its own dark styling)
 
 ## Safari 10 Constraints
 
@@ -117,6 +123,15 @@ These constraints shaped the frontend architecture:
 | last_read_at | TEXT | ISO timestamp |
 | UNIQUE | | (device_id, document_id) |
 
+### device_settings
+| Column | Type | Description |
+|--------|------|-------------|
+| device_id | TEXT | FK to devices |
+| setting_key | TEXT | Setting name (e.g. 'theme') |
+| setting_value | TEXT | Setting value (e.g. 'dark') |
+| updated_at | TEXT | ISO timestamp |
+| PRIMARY KEY | | (device_id, setting_key) |
+
 ## API Endpoints
 
 | Method | Path | Purpose |
@@ -129,4 +144,6 @@ These constraints shaped the frontend architecture:
 | GET | `/api/documents/:id/download` | Download original file |
 | GET | `/api/search?q=term` | Search by filename/path |
 | GET/PUT | `/api/documents/:id/progress` | Read/save reading progress |
+| GET | `/api/settings` | Get all settings for current device |
+| PUT | `/api/settings` | Upsert a setting (`{ key, value }`) |
 | POST | `/api/scan` | Trigger directory re-scan |

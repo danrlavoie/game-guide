@@ -64,3 +64,4 @@ docs/             # Architecture and requirements docs
 2. **Browsing:** The web UI shows folders and documents with thumbnail previews
 3. **Reading:** When you open a document, pages are rendered server-side to JPEG and streamed to the browser as `<img>` tags
 4. **Progress:** Your reading position is saved automatically per device (identified by cookie)
+5. **Settings:** Dark/light mode toggle and other per-device preferences via the Settings page

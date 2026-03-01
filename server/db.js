@@ -59,6 +59,15 @@ function initSchema() {
     CREATE INDEX IF NOT EXISTS idx_documents_name ON documents(file_name);\
     CREATE INDEX IF NOT EXISTS idx_progress_device ON reading_progress(device_id);\
     CREATE INDEX IF NOT EXISTS idx_progress_last_read ON reading_progress(last_read_at);\
+    \
+    CREATE TABLE IF NOT EXISTS device_settings (\
+      device_id TEXT NOT NULL,\
+      setting_key TEXT NOT NULL,\
+      setting_value TEXT NOT NULL,\
+      updated_at TEXT DEFAULT (datetime(\'now\')),\
+      PRIMARY KEY (device_id, setting_key),\
+      FOREIGN KEY (device_id) REFERENCES devices(id)\
+    );\
   ');
 }
 

@@ -4,7 +4,10 @@ var HomePage = (function() {
     container.innerHTML =
       '<div class="header">' +
         '<h1>Game Guide</h1>' +
-        '<button class="scan-btn" id="scan-btn">Scan</button>' +
+        '<div class="header-actions">' +
+          '<button class="scan-btn" id="scan-btn">Scan</button>' +
+          '<a href="#/settings" class="scan-btn" style="margin-left: 8px;">Settings</a>' +
+        '</div>' +
       '</div>' +
       '<div class="search-bar">' +
         '<input type="search" id="home-search" placeholder="Search documents...">' +

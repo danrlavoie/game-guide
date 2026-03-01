@@ -1,9 +1,9 @@
 /* Document Card */
 .doc-card {
-  background: white;
+  background: var(--card-bg);
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
   cursor: pointer;
   display: -webkit-flex;
   display: flex;
@@ -12,13 +12,13 @@
 }
 
 .doc-card:active {
-  border-color: #3498db;
+  border-color: var(--accent-color);
 }
 
 .doc-card-thumb {
   width: 100%;
   height: 180px;
-  background: #e8e8e8;
+  background: var(--thumb-bg);
   display: -webkit-flex;
   display: flex;
   -webkit-align-items: center;
@@ -37,7 +37,7 @@
 
 .doc-card-thumb .placeholder {
   font-size: 32px;
-  color: #bbb;
+  color: var(--placeholder-color);
 }
 
 .doc-card-info {
@@ -55,7 +55,7 @@
 
 .doc-card-meta {
   font-size: 11px;
-  color: #999;
+  color: var(--text-tertiary);
   margin-top: 4px;
   display: -webkit-flex;
   display: flex;
@@ -65,12 +65,12 @@
 
 .doc-card-progress {
   height: 3px;
-  background: #e0e0e0;
+  background: var(--progress-bg);
 }
 
 .doc-card-progress-bar {
   height: 100%;
-  background: #3498db;
+  background: var(--progress-fill);
   transition: width 0.3s;
 }
 

@@ -18,8 +18,8 @@
 
 /* Header */
 .header {
-  background: #2c3e50;
-  color: white;
+  background: var(--header-bg);
+  color: var(--header-text);
   padding: 12px 16px;
   display: -webkit-flex;
   display: flex;
@@ -35,7 +35,14 @@
 }
 
 .header a {
-  color: white;
+  color: var(--header-text);
+}
+
+.header-actions {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
 }
 
 .header-back {
@@ -48,32 +55,33 @@
 /* Search bar */
 .search-bar {
   padding: 12px 16px;
-  background: white;
-  border-bottom: 1px solid #ddd;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--input-border);
 }
 
 .search-bar input {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--input-border);
   border-radius: 8px;
   font-size: 16px; /* Prevents iOS zoom on focus */
-  background: #f8f8f8;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .search-bar input:focus {
-  border-color: #3498db;
-  background: white;
+  border-color: var(--accent-color);
+  background: var(--bg-secondary);
 }
 
 /* Section headers */
 .section-title {
   font-size: 16px;
   font-weight: 600;
-  color: #555;
+  color: var(--text-secondary);
   margin: 20px 0 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-color);
 }
 
 /* Breadcrumbs */
@@ -84,11 +92,11 @@
   flex-wrap: wrap;
   padding: 8px 0;
   font-size: 13px;
-  color: #888;
+  color: var(--text-tertiary);
 }
 
 .breadcrumbs a {
-  color: #3498db;
+  color: var(--accent-color);
 }
 
 .breadcrumbs span {
@@ -106,15 +114,15 @@
   -webkit-align-items: center;
   align-items: center;
   padding: 12px;
-  background: white;
+  background: var(--card-bg);
   border-radius: 8px;
   margin-bottom: 8px;
   cursor: pointer;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
 }
 
 .folder-item:active {
-  background: #f0f0f0;
+  background: var(--bg-tertiary);
 }
 
 .folder-icon {
@@ -153,7 +161,7 @@
 .btn {
   display: inline-block;
   padding: 10px 20px;
-  background: #3498db;
+  background: var(--accent-color);
   color: white;
   border-radius: 8px;
   font-size: 15px;
@@ -163,7 +171,7 @@
 }
 
 .btn:active {
-  background: #2980b9;
+  background: var(--accent-hover);
 }
 
 .btn-secondary {
@@ -189,7 +197,7 @@
 .empty-state {
   text-align: center;
   padding: 40px 20px;
-  color: #999;
+  color: var(--text-tertiary);
 }
 
 .empty-state p {
@@ -200,7 +208,7 @@
 .loading {
   text-align: center;
   padding: 40px;
-  color: #999;
+  color: var(--text-tertiary);
 }
 
 /* Scan button */
@@ -210,7 +218,7 @@
   background: rgba(255,255,255,0.15);
   border-radius: 4px;
   cursor: pointer;
-  color: white;
+  color: var(--header-text);
 }
 
 .scan-btn:active {
