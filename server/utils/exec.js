@@ -12,4 +12,10 @@ function execAsync(command, options) {
   });
 }
 
-module.exports = { execAsync };
+// Escape a string for safe use inside double quotes in a shell command.
+// Handles: $ ` " \ !
+function shellEscape(str) {
+  return str.replace(/([\\$`"!])/g, '\\$1');
+}
+
+module.exports = { execAsync, shellEscape };

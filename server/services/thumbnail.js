@@ -4,7 +4,7 @@ var sharp = require('sharp');
 sharp.cache(false); // Prevent decoded image cache from accumulating over large batches
 var config = require('../config');
 var { getDb } = require('../db');
-var { execAsync } = require('../utils/exec');
+var { execAsync, shellEscape } = require('../utils/exec');
 var { isZipFile } = require('../utils/archive');
 
 function getThumbnail(doc, fullPath) {
@@ -34,7 +34,7 @@ function generateThumbnail(doc, fullPath, thumbPath) {
 function generatePdfThumbnail(pdfPath, thumbPath) {
   var tempDir = path.dirname(thumbPath);
   var tempPrefix = path.join(tempDir, 'thumb_temp_' + Date.now());
-  var escapedPath = pdfPath.replace(/"/g, '\\"');
+  var escapedPath = shellEscape(pdfPath);
 
   // Render first page at low DPI for thumbnail
   var cmd = 'pdftoppm -jpeg -jpegopt quality=80 -r 72 -f 1 -l 1 "' +
@@ -67,7 +67,7 @@ function generatePdfThumbnail(pdfPath, thumbPath) {
 }
 
 function generateCbzThumbnail(cbzPath, thumbPath) {
-  var escapedPath = cbzPath.replace(/"/g, '\\"');
+  var escapedPath = shellEscape(cbzPath);
   var tempDir = path.dirname(thumbPath);
 
   return execAsync('unzip -l "' + escapedPath + '"').then(function(stdout) {
@@ -91,7 +91,7 @@ function generateCbzThumbnail(cbzPath, thumbPath) {
     }
 
     var firstImage = imageFiles[0];
-    var escapedTarget = firstImage.replace(/"/g, '\\"');
+    var escapedTarget = shellEscape(firstImage);
     var tempExtracted = path.join(tempDir, 'cbz_temp_' + Date.now() + path.extname(firstImage));
 
     return execAsync('unzip -o -j "' + escapedPath + '" "' + escapedTarget + '" -d "' + tempDir + '"')
@@ -115,7 +115,7 @@ function generateCbrThumbnail(cbrPath, thumbPath) {
     return generateCbzThumbnail(cbrPath, thumbPath);
   }
 
-  var escapedPath = cbrPath.replace(/"/g, '\\"');
+  var escapedPath = shellEscape(cbrPath);
   var tempDir = path.dirname(thumbPath);
 
   return execAsync('unrar lb "' + escapedPath + '"').then(function(stdout) {
@@ -136,7 +136,7 @@ function generateCbrThumbnail(cbrPath, thumbPath) {
     }
 
     var firstImage = imageFiles[0];
-    var escapedTarget = firstImage.replace(/"/g, '\\"');
+    var escapedTarget = shellEscape(firstImage);
 
     return execAsync('unrar e -o+ "' + escapedPath + '" "' + escapedTarget + '" "' + tempDir + '/"')
       .then(function() {

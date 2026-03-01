@@ -1,7 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var config = require('../config');
-var { execAsync } = require('../utils/exec');
+var { execAsync, shellEscape } = require('../utils/exec');
 var { isZipFile } = require('../utils/archive');
 
 function getPage(doc, fullPath, pageNum) {
@@ -29,7 +29,7 @@ function getPage(doc, fullPath, pageNum) {
 
 function renderPdfPage(pdfPath, cacheDir, pageNum) {
   var outputPrefix = path.join(cacheDir, 'temp');
-  var escapedPath = pdfPath.replace(/"/g, '\\"');
+  var escapedPath = shellEscape(pdfPath);
 
   // pdftoppm uses 1-based page numbers, outputs as prefix-NNNNNN.jpg
   var cmd = 'pdftoppm -jpeg -jpegopt quality=' + config.pageQuality +
@@ -58,7 +58,7 @@ function renderPdfPage(pdfPath, cacheDir, pageNum) {
 }
 
 function renderCbzPage(cbzPath, cacheDir, pageNum) {
-  var escapedPath = cbzPath.replace(/"/g, '\\"');
+  var escapedPath = shellEscape(cbzPath);
 
   // List files in CBZ, filter to images, sort by name
   return execAsync('unzip -l "' + escapedPath + '"').then(function(stdout) {
@@ -82,7 +82,7 @@ function renderCbzPage(cbzPath, cacheDir, pageNum) {
     }
 
     var targetFile = imageFiles[pageNum - 1];
-    var escapedTarget = targetFile.replace(/"/g, '\\"');
+    var escapedTarget = shellEscape(targetFile);
 
     // Extract single file
     return execAsync('unzip -o -j "' + escapedPath + '" "' + escapedTarget + '" -d "' + cacheDir + '"')
@@ -115,7 +115,7 @@ function renderCbrPage(cbrPath, cacheDir, pageNum) {
     return renderCbzPage(cbrPath, cacheDir, pageNum);
   }
 
-  var escapedPath = cbrPath.replace(/"/g, '\\"');
+  var escapedPath = shellEscape(cbrPath);
 
   // List files in CBR, filter to images, sort by name
   return execAsync('unrar lb "' + escapedPath + '"').then(function(stdout) {
@@ -136,7 +136,7 @@ function renderCbrPage(cbrPath, cacheDir, pageNum) {
     }
 
     var targetFile = imageFiles[pageNum - 1];
-    var escapedTarget = targetFile.replace(/"/g, '\\"');
+    var escapedTarget = shellEscape(targetFile);
 
     // Extract single file to cache directory
     return execAsync('unrar e -o+ "' + escapedPath + '" "' + escapedTarget + '" "' + cacheDir + '/"')

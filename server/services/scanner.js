@@ -3,7 +3,7 @@ var path = require('path');
 var crypto = require('crypto');
 var { getDb } = require('../db');
 var config = require('../config');
-var { execAsync } = require('../utils/exec');
+var { execAsync, shellEscape } = require('../utils/exec');
 var { isZipFile } = require('../utils/archive');
 var thumbnail = require('./thumbnail');
 
@@ -232,13 +232,13 @@ function updatePageCounts(docs) {
 
 function getPageCount(filePath, fileType) {
   if (fileType === 'pdf') {
-    return execAsync('pdfinfo "' + filePath.replace(/"/g, '\\"') + '"')
+    return execAsync('pdfinfo "' + shellEscape(filePath) + '"')
       .then(function(stdout) {
         var match = stdout.match(/Pages:\s+(\d+)/);
         return match ? parseInt(match[1], 10) : 0;
       });
   } else if (fileType === 'cbr') {
-    var escapedCbr = filePath.replace(/"/g, '\\"');
+    var escapedCbr = shellEscape(filePath);
     if (isZipFile(filePath)) {
       // Mislabeled ZIP with .cbr extension — use unzip
       return execAsync('unzip -l "' + escapedCbr + '"')
@@ -261,7 +261,7 @@ function getPageCount(filePath, fileType) {
       });
   } else {
     // CBZ: count image files in ZIP
-    return execAsync('unzip -l "' + filePath.replace(/"/g, '\\"') + '"')
+    return execAsync('unzip -l "' + shellEscape(filePath) + '"')
       .then(function(stdout) {
         return countImageLines(stdout);
       })
