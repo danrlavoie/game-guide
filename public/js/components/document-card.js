@@ -18,12 +18,21 @@ var DocumentCard = (function() {
       '</div>';
 
     var progressHtml = '';
-    if (doc.current_page && doc.page_count) {
+    if (doc.file_type === 'txt') {
+      if (doc.current_page && doc.current_page > 0) {
+        var pct = Math.round(doc.current_page / 100);
+        progressHtml = '<div class="doc-card-progress">' +
+          '<div class="doc-card-progress-bar" style="width:' + pct + '%"></div>' +
+          '</div>';
+      }
+    } else if (doc.current_page && doc.page_count) {
       var pct = Math.round((doc.current_page / doc.page_count) * 100);
       progressHtml = '<div class="doc-card-progress">' +
         '<div class="doc-card-progress-bar" style="width:' + pct + '%"></div>' +
         '</div>';
     }
+
+    var metaPages = doc.file_type === 'txt' ? 'Text' : (doc.page_count || '?') + ' pages';
 
     card.innerHTML = thumbHtml +
       '<div class="doc-card-info">' +
@@ -31,14 +40,14 @@ var DocumentCard = (function() {
           escapeHtml(doc.file_name) +
         '</div>' +
         '<div class="doc-card-meta">' +
-          '<span>' + (doc.page_count || '?') + ' pages</span>' +
+          '<span>' + metaPages + '</span>' +
           '<span>' + formatSize(doc.file_size) + '</span>' +
         '</div>' +
       '</div>' +
       progressHtml;
 
     card.addEventListener('click', function() {
-      window.location.hash = '#/view/' + doc.id;
+      window.location.hash = doc.file_type === 'txt' ? '#/read/' + doc.id : '#/view/' + doc.id;
     });
 
     return card;

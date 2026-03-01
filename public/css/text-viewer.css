@@ -1,0 +1,81 @@
+/* Text viewer - extends .viewer from viewer.css */
+.txt-viewer {
+  background: var(--bg-primary);
+}
+
+/* Toolbar title */
+.txt-viewer-title {
+  font-size: 13px;
+  color: #ccc;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Toolbar right buttons spacing */
+.txt-toolbar .viewer-toolbar-right > * {
+  margin-left: 6px;
+}
+
+/* Settings panel - drops below toolbar */
+.txt-settings-panel {
+  background: rgba(0, 0, 0, 0.9);
+  position: absolute;
+  top: 40px;
+  left: 0;
+  right: 0;
+  z-index: 109;
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.txt-settings-row {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.txt-settings-row:last-child {
+  border-bottom: none;
+}
+
+.txt-settings-label {
+  font-size: 14px;
+  color: #ccc;
+}
+
+.txt-settings-select {
+  background: rgba(255,255,255,0.15);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 14px;
+  min-width: 120px;
+}
+
+/* Scrollable text container */
+.txt-scroll-container {
+  -webkit-flex: 1;
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-top: 44px;
+}
+
+/* Text content */
+.txt-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.6;
+  margin: 0;
+  padding-top: 16px;
+  padding-bottom: 40px;
+  color: var(--text-primary);
+}

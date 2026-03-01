@@ -148,9 +148,13 @@ router.get('/:id/progress', function(req, res) {
 
 router.put('/:id/progress', function(req, res) {
   var db = getDb();
+  var doc = db.prepare('SELECT file_type FROM documents WHERE id = ?').get(req.params.id);
+  if (!doc) return res.status(404).json({ error: 'Document not found' });
+
   var currentPage = parseInt(req.body.current_page, 10);
-  if (!currentPage || currentPage < 1) {
-    return res.status(400).json({ error: 'Invalid page number' });
+  var minValid = doc.file_type === 'txt' ? 0 : 1;
+  if (isNaN(currentPage) || currentPage < minValid) {
+    return res.status(400).json({ error: 'Invalid progress value' });
   }
 
   db.prepare('\
@@ -193,6 +197,10 @@ router.get('/:id/thumbnail', function(req, res) {
   var doc = db.prepare('SELECT * FROM documents WHERE id = ?').get(req.params.id);
   if (!doc) return res.status(404).json({ error: 'Document not found' });
 
+  if (doc.file_type === 'txt') {
+    return res.status(404).json({ error: 'No thumbnail for text files' });
+  }
+
   var fullPath = path.join(config.documentsPath, doc.file_path);
 
   thumbnail.getThumbnail(doc, fullPath)
@@ -203,6 +211,26 @@ router.get('/:id/thumbnail', function(req, res) {
       console.error('Thumbnail error:', err);
       res.status(500).json({ error: 'Failed to generate thumbnail' });
     });
+});
+
+// Serve text file content
+router.get('/:id/content', function(req, res) {
+  var db = getDb();
+  var doc = db.prepare('SELECT * FROM documents WHERE id = ?').get(req.params.id);
+  if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+  if (doc.file_type !== 'txt') {
+    return res.status(400).json({ error: 'Document is not a text file' });
+  }
+
+  var fullPath = path.join(config.documentsPath, doc.file_path);
+
+  if (!fs.existsSync(fullPath)) {
+    return res.status(404).json({ error: 'File not found on disk' });
+  }
+
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.sendFile(fullPath);
 });
 
 // Download original file

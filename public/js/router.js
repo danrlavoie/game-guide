@@ -23,6 +23,10 @@ var Router = (function() {
     } else if (hash.indexOf('#/browse/') === 0 || hash === '#/browse') {
       var folderPath = decodeURI(hash.substring('#/browse/'.length));
       BrowsePage.render(app, folderPath);
+    } else if (hash.indexOf('#/read/') === 0) {
+      var txtDocId = hash.substring('#/read/'.length);
+      currentCleanup = TextViewerPage.cleanup;
+      TextViewerPage.render(app, txtDocId);
     } else if (hash.indexOf('#/view/') === 0) {
       var docId = hash.substring('#/view/'.length);
       currentCleanup = ViewerPage.cleanup;

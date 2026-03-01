@@ -64,6 +64,17 @@ var API = (function() {
       return request('POST', '/api/scan');
     },
 
+    getTextContent: function(docId) {
+      return fetch('/api/documents/' + docId + '/content').then(function(res) {
+        if (!res.ok) {
+          return res.json().then(function(data) {
+            throw new Error(data.error || 'Request failed');
+          });
+        }
+        return res.text();
+      });
+    },
+
     getSettings: function() {
       return request('GET', '/api/settings');
     },

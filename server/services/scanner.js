@@ -6,7 +6,7 @@ var config = require('../config');
 var { execAsync } = require('../utils/exec');
 var thumbnail = require('./thumbnail');
 
-var SUPPORTED_EXTENSIONS = ['.pdf', '.cbz', '.cbr'];
+var SUPPORTED_EXTENSIONS = ['.pdf', '.cbz', '.cbr', '.txt'];
 
 function scan() {
   try {
@@ -53,7 +53,7 @@ function scan() {
       files.forEach(function(file) {
         seenPaths[file.relativePath] = true;
         var ext = path.extname(file.relativePath).toLowerCase();
-        var fileType = ext === '.pdf' ? 'pdf' : (ext === '.cbr' ? 'cbr' : 'cbz');
+        var fileType = ext === '.pdf' ? 'pdf' : (ext === '.txt' ? 'txt' : (ext === '.cbr' ? 'cbr' : 'cbz'));
         var parentFolder = path.dirname(file.relativePath);
         if (parentFolder === '.') parentFolder = '';
 
@@ -118,15 +118,18 @@ function scan() {
 
     var result = { added: added, updated: updated, removed: removed, total: files.length };
 
-    if (newDocIds.length === 0) {
+    // Filter txt files from background work (no page counts or thumbnails)
+    var mediaDocs = newDocIds.filter(function(d) { return d.type !== 'txt'; });
+
+    if (mediaDocs.length === 0) {
       return Promise.resolve({ result: result, backgroundWork: Promise.resolve() });
     }
 
     // Defer page counts + thumbnails to background
-    console.log('Background processing ' + newDocIds.length + ' documents (page counts + thumbnails)...');
-    var backgroundWork = updatePageCounts(newDocIds).then(function() {
+    console.log('Background processing ' + mediaDocs.length + ' documents (page counts + thumbnails)...');
+    var backgroundWork = updatePageCounts(mediaDocs).then(function() {
       console.log('Page counts complete. Generating thumbnails...');
-      return thumbnail.generateBatch(newDocIds);
+      return thumbnail.generateBatch(mediaDocs);
     }).then(function() {
       console.log('Background processing complete.');
     }).catch(function(err) {
