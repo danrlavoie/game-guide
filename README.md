@@ -21,25 +21,57 @@ Visit `http://localhost:3000` in a browser.
 
 ### Docker (Recommended)
 
-Edit `docker-compose.yml` to point at your documents directory, then:
-
 ```bash
 docker compose up --build
 ```
 
 Access from iPad at `http://<server-ip>:3000`.
 
+All settings can be overridden with environment variables:
+
+```bash
+HOST_PORT=8080 DOCUMENTS_PATH=/my/docs DATA_PATH=/my/data docker compose up --build
+```
+
+### UnRAID
+
+Add the container through the UnRAID Docker UI with the following mappings:
+
+**Ports:**
+
+| Name | Container Port | Host Port |
+|------|---------------|-----------|
+| Web UI | `3000` | `3000` (or your choice) |
+
+**Paths:**
+
+| Name | Container Path | Host Path | Mode |
+|------|---------------|-----------|------|
+| Documents | `/documents` | `/mnt/user/Game books magazines manuals` | Read Only |
+| Data | `/data` | `/mnt/user/appdata/game-guide/data` | Read/Write |
+
+**Variables (optional):**
+
+| Name | Default | Description |
+|------|---------|-------------|
+| `PAGE_DPI` | `150` | DPI for rendered page JPEGs (higher = sharper, larger files) |
+| `THUMBNAIL_WIDTH` | `200` | Thumbnail width in pixels |
+| `PAGE_QUALITY` | `85` | JPEG quality for rendered pages (1-100) |
+| `SCAN_INTERVAL` | `0` | Auto-rescan interval in minutes (0 = manual only) |
+
 ## Configuration
 
-Environment variables:
+All configuration is via environment variables. In Docker, these are set through `docker-compose.yml` or the UnRAID Docker UI. For local development, pass them on the command line.
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `3000` | Server port |
-| `DOCUMENTS_PATH` | `/documents` | Path to mounted document directory |
-| `DATA_PATH` | `./data` | Path for SQLite DB + page cache |
-| `PAGE_DPI` | `150` | DPI for PDF page rendering |
-| `THUMBNAIL_WIDTH` | `200` | Thumbnail width in pixels |
+| Variable | Default (Docker) | Default (Local) | Description |
+|----------|-----------------|-----------------|-------------|
+| `HOST_PORT` | `3000` | n/a | Host port mapped to container port 3000 |
+| `DOCUMENTS_PATH` | `/mnt/user/Game books magazines manuals` | `/documents` | Path to document directory |
+| `DATA_PATH` | `/mnt/user/appdata/game-guide/data` | `./data` | Path for SQLite DB, page cache, thumbnails |
+| `PAGE_DPI` | `150` | `150` | DPI for PDF page rendering |
+| `THUMBNAIL_WIDTH` | `200` | `200` | Thumbnail width in pixels |
+| `PAGE_QUALITY` | `85` | `85` | JPEG quality for rendered pages |
+| `SCAN_INTERVAL` | `0` | `0` | Auto-rescan interval in minutes (0 = manual only) |
 
 ## Project Structure
 

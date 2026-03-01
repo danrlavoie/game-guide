@@ -2,11 +2,13 @@ services:
   game-guide:
     build: .
     ports:
-      - "3000:3000"
+      - "${HOST_PORT:-3000}:3000"
     volumes:
-      - "/mnt/user/Game books magazines manuals:/documents:ro"
-      - game-guide-data:/data
+      - "${DOCUMENTS_PATH:-/mnt/user/Game books magazines manuals}:/documents:ro"
+      - "${DATA_PATH:-/mnt/user/appdata/game-guide/data}:/data"
+    environment:
+      - PAGE_DPI=${PAGE_DPI:-150}
+      - THUMBNAIL_WIDTH=${THUMBNAIL_WIDTH:-200}
+      - PAGE_QUALITY=${PAGE_QUALITY:-85}
+      - SCAN_INTERVAL=${SCAN_INTERVAL:-0}
     restart: unless-stopped
-
-volumes:
-  game-guide-data:
