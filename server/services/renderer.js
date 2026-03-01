@@ -17,6 +17,8 @@ function getPage(doc, fullPath, pageNum) {
 
   if (doc.file_type === 'pdf') {
     return renderPdfPage(fullPath, cacheDir, pageNum);
+  } else if (doc.file_type === 'cbr') {
+    return renderCbrPage(fullPath, cacheDir, pageNum);
   } else if (doc.file_type === 'cbz') {
     return renderCbzPage(fullPath, cacheDir, pageNum);
   } else {
@@ -95,6 +97,54 @@ function renderCbzPage(cbzPath, cacheDir, pageNum) {
         }
 
         // Convert non-JPEG to JPEG using sharp
+        var sharp = require('sharp');
+        return sharp(extractedPath)
+          .jpeg({ quality: config.pageQuality })
+          .toFile(finalPath)
+          .then(function() {
+            fs.unlinkSync(extractedPath);
+            return finalPath;
+          });
+      });
+  });
+}
+
+function renderCbrPage(cbrPath, cacheDir, pageNum) {
+  var escapedPath = cbrPath.replace(/"/g, '\\"');
+
+  // List files in CBR, filter to images, sort by name
+  return execAsync('unrar lb "' + escapedPath + '"').then(function(stdout) {
+    var lines = stdout.split('\n');
+    var imageFiles = [];
+
+    lines.forEach(function(line) {
+      var filename = line.trim();
+      if (filename && /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(filename) && filename.indexOf('__MACOSX') === -1) {
+        imageFiles.push(filename);
+      }
+    });
+
+    imageFiles.sort();
+
+    if (pageNum < 1 || pageNum > imageFiles.length) {
+      throw new Error('Page ' + pageNum + ' out of range (1-' + imageFiles.length + ')');
+    }
+
+    var targetFile = imageFiles[pageNum - 1];
+    var escapedTarget = targetFile.replace(/"/g, '\\"');
+
+    // Extract single file to cache directory
+    return execAsync('unrar e -o+ "' + escapedPath + '" "' + escapedTarget + '" "' + cacheDir + '/"')
+      .then(function() {
+        var extractedName = path.basename(targetFile);
+        var extractedPath = path.join(cacheDir, extractedName);
+        var finalPath = path.join(cacheDir, pageNum + '.jpg');
+
+        if (/\.jpe?g$/i.test(extractedName)) {
+          fs.renameSync(extractedPath, finalPath);
+          return finalPath;
+        }
+
         var sharp = require('sharp');
         return sharp(extractedPath)
           .jpeg({ quality: config.pageQuality })

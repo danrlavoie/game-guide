@@ -21,6 +21,8 @@ function getThumbnail(doc, fullPath) {
 function generateThumbnail(doc, fullPath, thumbPath) {
   if (doc.file_type === 'pdf') {
     return generatePdfThumbnail(fullPath, thumbPath);
+  } else if (doc.file_type === 'cbr') {
+    return generateCbrThumbnail(fullPath, thumbPath);
   } else if (doc.file_type === 'cbz') {
     return generateCbzThumbnail(fullPath, thumbPath);
   }
@@ -91,6 +93,46 @@ function generateCbzThumbnail(cbzPath, thumbPath) {
     var tempExtracted = path.join(tempDir, 'cbz_temp_' + Date.now() + path.extname(firstImage));
 
     return execAsync('unzip -o -j "' + escapedPath + '" "' + escapedTarget + '" -d "' + tempDir + '"')
+      .then(function() {
+        var extractedPath = path.join(tempDir, path.basename(firstImage));
+
+        return sharp(extractedPath)
+          .resize(config.thumbnailWidth)
+          .jpeg({ quality: 80 })
+          .toFile(thumbPath)
+          .then(function() {
+            fs.unlinkSync(extractedPath);
+            return thumbPath;
+          });
+      });
+  });
+}
+
+function generateCbrThumbnail(cbrPath, thumbPath) {
+  var escapedPath = cbrPath.replace(/"/g, '\\"');
+  var tempDir = path.dirname(thumbPath);
+
+  return execAsync('unrar lb "' + escapedPath + '"').then(function(stdout) {
+    var lines = stdout.split('\n');
+    var imageFiles = [];
+
+    lines.forEach(function(line) {
+      var filename = line.trim();
+      if (filename && /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(filename) && filename.indexOf('__MACOSX') === -1) {
+        imageFiles.push(filename);
+      }
+    });
+
+    imageFiles.sort();
+
+    if (imageFiles.length === 0) {
+      throw new Error('No images found in CBR');
+    }
+
+    var firstImage = imageFiles[0];
+    var escapedTarget = firstImage.replace(/"/g, '\\"');
+
+    return execAsync('unrar e -o+ "' + escapedPath + '" "' + escapedTarget + '" "' + tempDir + '/"')
       .then(function() {
         var extractedPath = path.join(tempDir, path.basename(firstImage));
 

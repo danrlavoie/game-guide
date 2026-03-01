@@ -6,7 +6,7 @@ var config = require('../config');
 var { execAsync } = require('../utils/exec');
 var thumbnail = require('./thumbnail');
 
-var SUPPORTED_EXTENSIONS = ['.pdf', '.cbz'];
+var SUPPORTED_EXTENSIONS = ['.pdf', '.cbz', '.cbr'];
 
 function scan() {
   return new Promise(function(resolve, reject) {
@@ -54,7 +54,7 @@ function scan() {
           seenPaths[file.relativePath] = true;
           var hash = computePartialHash(file.fullPath);
           var ext = path.extname(file.relativePath).toLowerCase();
-          var fileType = ext === '.pdf' ? 'pdf' : 'cbz';
+          var fileType = ext === '.pdf' ? 'pdf' : (ext === '.cbr' ? 'cbr' : 'cbz');
           var stat = fs.statSync(file.fullPath);
           var parentFolder = path.dirname(file.relativePath);
           if (parentFolder === '.') parentFolder = '';
@@ -213,18 +213,21 @@ function getPageCount(filePath, fileType) {
         var match = stdout.match(/Pages:\s+(\d+)/);
         return match ? parseInt(match[1], 10) : 0;
       });
+  } else if (fileType === 'cbr') {
+    // CBR: count image files in RAR
+    return execAsync('unrar lb "' + filePath.replace(/"/g, '\\"') + '"')
+      .then(function(stdout) {
+        return countImageLines(stdout);
+      })
+      .catch(function(err) {
+        console.error('\nCBR read error for ' + path.basename(filePath) + ': ' + (err.message || '').split('\n')[0]);
+        return 0;
+      });
   } else {
     // CBZ: count image files in ZIP
     return execAsync('unzip -l "' + filePath.replace(/"/g, '\\"') + '"')
       .then(function(stdout) {
-        var lines = stdout.split('\n');
-        var count = 0;
-        lines.forEach(function(line) {
-          if (/\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(line)) {
-            count++;
-          }
-        });
-        return count;
+        return countImageLines(stdout);
       })
       .catch(function(err) {
         var msg = err.message || '';
@@ -236,6 +239,17 @@ function getPageCount(filePath, fileType) {
         return 0;
       });
   }
+}
+
+function countImageLines(stdout) {
+  var lines = stdout.split('\n');
+  var count = 0;
+  lines.forEach(function(line) {
+    if (/\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(line)) {
+      count++;
+    }
+  });
+  return count;
 }
 
 function invalidateCache(docId) {

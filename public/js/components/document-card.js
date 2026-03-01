@@ -14,7 +14,7 @@ var DocumentCard = (function() {
     var thumbHtml = '<div class="doc-card-thumb">' +
       '<img src="' + API.getThumbnailUrl(doc.id) + '" alt="" ' +
       'onerror="this.parentNode.innerHTML=\'<span class=placeholder>' +
-      (doc.file_type === 'pdf' ? 'PDF' : 'CBZ') + '</span>\'">' +
+      (doc.file_type.toUpperCase()) + '</span>\'">' +
       '</div>';
 
     var progressHtml = '';

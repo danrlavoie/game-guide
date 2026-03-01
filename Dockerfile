@@ -1,7 +1,7 @@
 FROM node:20-alpine
 
-# Install poppler-utils (pdftoppm, pdfinfo) and unzip for CBZ support
-RUN apk add --no-cache poppler-utils unzip
+# Install poppler-utils (pdftoppm, pdfinfo), unzip for CBZ, unrar for CBR
+RUN apk add --no-cache poppler-utils unzip unrar
 
 WORKDIR /app
 
