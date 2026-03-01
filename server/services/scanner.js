@@ -46,6 +46,9 @@ function scan() {
         thumbnail_generated = 0, updated_at = datetime(\'now\') WHERE id = ?\
       ');
 
+      var processed = 0;
+      var fileTotal = files.length;
+
       var transaction = db.transaction(function() {
         files.forEach(function(file) {
           seenPaths[file.relativePath] = true;
@@ -79,7 +82,15 @@ function scan() {
             invalidateCache(existingDoc.id);
             updated++;
           }
+
+          processed++;
+          if (processed % 100 === 0 || processed === fileTotal) {
+            process.stdout.write('\r  Cataloging: ' + processed + ' / ' + fileTotal +
+              ' (' + added + ' new, ' + updated + ' updated)');
+          }
         });
+
+        if (fileTotal > 0) process.stdout.write('\n');
 
         // Remove documents that no longer exist on disk
         Object.keys(existing).forEach(function(filePath) {
@@ -214,6 +225,15 @@ function getPageCount(filePath, fileType) {
           }
         });
         return count;
+      })
+      .catch(function(err) {
+        var msg = err.message || '';
+        if (msg.indexOf('End-of-central-directory') !== -1 || msg.indexOf('not a zipfile') !== -1) {
+          console.error('\nSkipping invalid CBZ (not a valid ZIP): ' + path.basename(filePath));
+        } else {
+          console.error('\nCBZ read error for ' + path.basename(filePath) + ': ' + msg.split('\n')[0]);
+        }
+        return 0;
       });
   }
 }

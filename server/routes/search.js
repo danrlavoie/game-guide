@@ -23,11 +23,12 @@ router.get('/', function(req, res) {
   if (documents.length > 0) {
     var docIds = documents.map(function(d) { return d.id; });
     var placeholders = docIds.map(function() { return '?'; }).join(',');
-    var progress = db.prepare('\
+    var stmt = db.prepare('\
       SELECT document_id, current_page, last_read_at \
       FROM reading_progress \
       WHERE device_id = ? AND document_id IN (' + placeholders + ')\
-    ').all.apply(null, [req.deviceId].concat(docIds));
+    ');
+    var progress = stmt.all.apply(stmt, [req.deviceId].concat(docIds));
 
     var progressMap = {};
     progress.forEach(function(p) {
