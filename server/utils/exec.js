@@ -13,9 +13,10 @@ function execAsync(command, options) {
 }
 
 // Escape a string for safe use inside double quotes in a shell command.
-// Handles: $ ` " \ !
+// child_process.exec uses /bin/sh -c, where only $ ` " \ are special
+// inside double quotes. (! is only special in interactive bash, not /bin/sh)
 function shellEscape(str) {
-  return str.replace(/([\\$`"!])/g, '\\$1');
+  return str.replace(/([\\$`"])/g, '\\$1');
 }
 
 module.exports = { execAsync, shellEscape };
