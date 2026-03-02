@@ -24,6 +24,7 @@ A client-server web app that serves PDF, CBZ, and CBR game manuals/strategy guid
 - **No canvas rendering:** Use `<img>` tags for page display to stay under Safari's 5-megapixel canvas limit
 - **CSS:** No CSS Grid (Safari 10 has partial support). Use Flexbox for layouts.
 - **Theming:** All colors use CSS custom properties (`var(--name)`). Light defaults on `:root`, dark overrides on `[data-theme="dark"]`. Viewer CSS is excluded (always dark).
+- **Logging:** Use Pino via `server/logger.js`. Do NOT use `console.log`, `console.error`, `console.warn`, or `process.stdout.write`. Create child loggers per module: `var log = require('./logger').child({ component: 'name' })`. Use structured key-value metadata: `log.info({ count: 5, file: path }, 'Message')`. Pino writes to stderr; stdout is unused.
 
 ## Safari 10 Compatibility - APIs to AVOID
 - Optional chaining (`?.`) and nullish coalescing (`??`)

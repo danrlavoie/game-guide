@@ -8,6 +8,7 @@
 | Database | SQLite via `better-sqlite3` | Zero-config, single-file, perfect for single-user LAN app |
 | PDF rendering | `pdftoppm` (poppler-utils) | Server-side PDF-to-JPEG conversion; avoids client-side memory/compatibility issues |
 | Image processing | `sharp` | Fast thumbnail generation |
+| Logging | `pino` + `pino-pretty` | Structured JSON logs to stderr; human-readable in dev |
 | Frontend | Vanilla ES6 JavaScript | No framework, no build step, ships directly to Safari 10 |
 | Container | Docker on UnRAID | Single container serves everything |
 
@@ -81,6 +82,15 @@ See `docs/performance.md` for detailed analysis of the scanning pipeline optimiz
 - Theme preference stored per device in `device_settings` table
 - FOUC prevention via synchronous XHR in `<head>` that fetches theme before first paint
 - Viewer page is excluded from theming (always uses its own dark styling)
+
+### Logging
+- All server logging uses Pino (`server/logger.js`). No `console.log/error/warn` or `process.stdout/stderr.write`.
+- Each module creates a child logger with a `component` field: `var log = require('./logger').child({ component: 'scanner' })`
+- Logs are structured wide events: level + message + key-value metadata (e.g. `log.error({ file: path, err: { message: e.message } }, 'Page count failed')`)
+- All log output goes to **stderr**. Stdout is unused.
+- Dev mode (`NODE_ENV !== 'production'`): `pino-pretty` transport provides human-readable colorized output
+- Production/Docker (`NODE_ENV=production`): raw JSON lines for machine parsing
+- `LOG_LEVEL` env var controls verbosity (default: `info`)
 
 ## Safari 10 Constraints
 

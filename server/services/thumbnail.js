@@ -186,7 +186,7 @@ function generateBatch(docs) {
             updateStmt.run(doc.id);
             done++;
             if (done % 10 === 0 || done === total) {
-              process.stdout.write('\r  Thumbnails: ' + done + ' / ' + total);
+              log.info({ done: done, total: total }, 'Thumbnail generation progress');
             }
           }).catch(function(err) {
             done++;
@@ -197,9 +197,7 @@ function generateBatch(docs) {
     })(docs.slice(i, i + batchSize));
   }
 
-  return chain.then(function() {
-    if (total > 0) process.stdout.write('\n');
-  });
+  return chain;
 }
 
 module.exports = { getThumbnail, generateBatch };

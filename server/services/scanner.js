@@ -97,12 +97,9 @@ function scan() {
 
         processed++;
         if (processed % 100 === 0 || processed === fileTotal) {
-          process.stdout.write('\r  Cataloging: ' + processed + ' / ' + fileTotal +
-            ' (' + added + ' new, ' + updated + ' updated, ' + unchanged + ' unchanged)');
+          log.info({ processed: processed, total: fileTotal, added: added, updated: updated, unchanged: unchanged }, 'Cataloging progress');
         }
       });
-
-      if (fileTotal > 0) process.stdout.write('\n');
 
       // Remove documents that no longer exist on disk
       Object.keys(existing).forEach(function(filePath) {
@@ -214,7 +211,7 @@ function updatePageCounts(docs) {
               updateStmt.run(count, doc.id);
               done++;
               if (done % 50 === 0 || done === total) {
-                process.stdout.write('\r  Page counts: ' + done + ' / ' + total);
+                log.info({ done: done, total: total }, 'Page counts progress');
               }
             })
             .catch(function(err) {
@@ -226,9 +223,7 @@ function updatePageCounts(docs) {
     })(docs.slice(i, i + batchSize));
   }
 
-  return chain.then(function() {
-    if (total > 0) process.stdout.write('\n');
-  });
+  return chain;
 }
 
 function getPageCount(filePath, fileType) {
