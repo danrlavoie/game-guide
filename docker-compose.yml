@@ -11,4 +11,5 @@ services:
       - THUMBNAIL_WIDTH=${THUMBNAIL_WIDTH:-200}
       - PAGE_QUALITY=${PAGE_QUALITY:-85}
       - SCAN_INTERVAL=${SCAN_INTERVAL:-0}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
     restart: unless-stopped

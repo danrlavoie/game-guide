@@ -3,6 +3,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var config = require('./config');
 var { getDb } = require('./db');
+var log = require('./logger').child({ component: 'server' });
 var deviceMiddleware = require('./middleware/device');
 
 var app = express();
@@ -35,20 +36,17 @@ app.get('*', function(req, res) {
 getDb();
 
 app.listen(config.port, function() {
-  console.log('Game Guide server listening on port ' + config.port);
-  console.log('Documents path: ' + config.documentsPath);
-  console.log('Data path: ' + config.dataPath);
+  log.info({ port: config.port, documentsPath: config.documentsPath, dataPath: config.dataPath }, 'Server started');
 
   // Run initial scan on startup
   var scanner = require('./services/scanner');
   scanner.scan().then(function(scanResult) {
     var r = scanResult.result;
-    console.log('Initial scan complete: ' + r.added + ' added, ' +
-      r.updated + ' updated, ' + r.removed + ' removed');
+    log.info({ added: r.added, updated: r.updated, removed: r.removed }, 'Initial scan complete');
     // Background work (page counts + thumbnails) continues asynchronously
     return scanResult.backgroundWork;
   }).catch(function(err) {
-    console.error('Initial scan failed:', err.message);
+    log.error({ err: err }, 'Initial scan failed');
   });
 });
 

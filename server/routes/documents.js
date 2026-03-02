@@ -6,6 +6,7 @@ var { getDb } = require('../db');
 var config = require('../config');
 var renderer = require('../services/renderer');
 var thumbnail = require('../services/thumbnail');
+var log = require('../logger').child({ component: 'routes.documents' });
 
 // List documents and subfolders
 router.get('/', function(req, res) {
@@ -186,7 +187,7 @@ router.get('/:id/pages/:pageNum', function(req, res) {
       res.sendFile(pagePath);
     })
     .catch(function(err) {
-      console.error('Render error:', err);
+      log.error({ err: err, docId: req.params.id, page: pageNum }, 'Page render failed');
       res.status(500).json({ error: 'Failed to render page' });
     });
 });
@@ -208,7 +209,7 @@ router.get('/:id/thumbnail', function(req, res) {
       res.sendFile(thumbPath);
     })
     .catch(function(err) {
-      console.error('Thumbnail error:', err);
+      log.error({ err: err, docId: req.params.id }, 'Thumbnail generation failed');
       res.status(500).json({ error: 'Failed to generate thumbnail' });
     });
 });

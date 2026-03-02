@@ -6,6 +6,7 @@ var config = require('../config');
 var { execAsync, shellEscape } = require('../utils/exec');
 var { isZipFile, isRarFile } = require('../utils/archive');
 var thumbnail = require('./thumbnail');
+var log = require('../logger').child({ component: 'scanner' });
 
 var SUPPORTED_EXTENSIONS = ['.pdf', '.cbz', '.cbr', '.txt'];
 
@@ -19,9 +20,9 @@ function scan() {
     }
 
     // Walk directory and collect files with stat info
-    console.log('Scanning documents directory...');
+    log.info('Scanning documents directory');
     var files = walkDirectory(documentsPath, documentsPath);
-    console.log('Found ' + files.length + ' documents');
+    log.info({ count: files.length }, 'Found documents');
 
     // Get existing documents from DB (include size + mtime for fast comparison)
     var existing = {};
@@ -115,7 +116,7 @@ function scan() {
 
     transaction();
 
-    console.log('Cataloged: ' + added + ' new, ' + updated + ' changed, ' + removed + ' removed, ' + unchanged + ' unchanged');
+    log.info({ added: added, updated: updated, removed: removed, unchanged: unchanged }, 'Catalog complete');
 
     var result = { added: added, updated: updated, removed: removed, total: files.length };
 
@@ -127,14 +128,14 @@ function scan() {
     }
 
     // Defer page counts + thumbnails to background
-    console.log('Background processing ' + mediaDocs.length + ' documents (page counts + thumbnails)...');
+    log.info({ count: mediaDocs.length }, 'Starting background processing');
     var backgroundWork = updatePageCounts(mediaDocs).then(function() {
-      console.log('Page counts complete. Generating thumbnails...');
+      log.info('Page counts complete, generating thumbnails');
       return thumbnail.generateBatch(mediaDocs);
     }).then(function() {
-      console.log('Background processing complete.');
+      log.info('Background processing complete');
     }).catch(function(err) {
-      console.error('Background processing error:', err);
+      log.error({ err: err }, 'Background processing error');
     });
 
     return Promise.resolve({ result: result, backgroundWork: backgroundWork });
@@ -151,7 +152,7 @@ function walkDirectory(dir, rootDir) {
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true });
   } catch (err) {
-    console.error('Cannot read directory:', dir, err.message);
+    log.error({ dir: dir, err: { message: err.message } }, 'Cannot read directory');
     return results;
   }
 
@@ -173,7 +174,7 @@ function walkDirectory(dir, rootDir) {
             mtime: stat.mtimeMs
           });
         } catch (err) {
-          console.error('Cannot stat file:', fullPath, err.message);
+          log.error({ file: fullPath, err: { message: err.message } }, 'Cannot stat file');
         }
       }
     }
@@ -190,7 +191,7 @@ function computePartialHash(filePath) {
     fs.closeSync(fd);
     return crypto.createHash('sha256').update(buffer.slice(0, bytesRead)).digest('hex');
   } catch (err) {
-    console.error('Hash error for', filePath, err.message);
+    log.error({ file: filePath, err: { message: err.message } }, 'Hash computation failed');
     return null;
   }
 }
@@ -218,7 +219,7 @@ function updatePageCounts(docs) {
             })
             .catch(function(err) {
               done++;
-              console.error('\nPage count error for', doc.fullPath, err.message);
+              log.error({ file: doc.fullPath, err: { message: err.message } }, 'Page count failed');
             });
         }));
       });
@@ -246,7 +247,7 @@ function getPageCount(filePath, fileType) {
           return countImageLines(stdout);
         })
         .catch(function(err) {
-          console.error('\nCBR (ZIP) read error for ' + path.basename(filePath) + ': ' + (err.message || '').split('\n')[0]);
+          log.error({ file: filePath, fileType: 'cbr', format: 'zip', err: { message: err.message } }, 'Archive read error');
           return 0;
         });
     }
@@ -256,7 +257,7 @@ function getPageCount(filePath, fileType) {
         return countImageLines(stdout);
       })
       .catch(function(err) {
-        console.error('\nCBR read error for ' + path.basename(filePath) + ': ' + (err.message || '').split('\n')[0]);
+        log.error({ file: filePath, fileType: 'cbr', err: { message: err.message } }, 'Archive read error');
         return 0;
       });
   } else {
@@ -267,7 +268,7 @@ function getPageCount(filePath, fileType) {
           return countImageLines(stdout);
         })
         .catch(function(err) {
-          console.error('\nCBZ (RAR) read error for ' + path.basename(filePath) + ': ' + (err.message || '').split('\n')[0]);
+          log.error({ file: filePath, fileType: 'cbz', format: 'rar', err: { message: err.message } }, 'Archive read error');
           return 0;
         });
     }
@@ -278,9 +279,9 @@ function getPageCount(filePath, fileType) {
       .catch(function(err) {
         var msg = err.message || '';
         if (msg.indexOf('End-of-central-directory') !== -1 || msg.indexOf('not a zipfile') !== -1) {
-          console.error('\nSkipping invalid CBZ (not a valid ZIP): ' + path.basename(filePath));
+          log.warn({ file: filePath, fileType: 'cbz' }, 'Skipping invalid CBZ (not a valid ZIP)');
         } else {
-          console.error('\nCBZ read error for ' + path.basename(filePath) + ': ' + msg.split('\n')[0]);
+          log.error({ file: filePath, fileType: 'cbz', err: { message: msg } }, 'Archive read error');
         }
         return 0;
       });
@@ -307,7 +308,7 @@ function invalidateCache(docId) {
       fs.rmSync(pageCacheDir, { recursive: true });
     }
   } catch (err) {
-    console.error('Cache invalidation error:', err.message);
+    log.warn({ docId: docId, err: { message: err.message } }, 'Cache invalidation error');
   }
 
   try {

@@ -6,6 +6,7 @@ var config = require('../config');
 var { getDb } = require('../db');
 var { execAsync, shellEscape } = require('../utils/exec');
 var { isZipFile, isRarFile } = require('../utils/archive');
+var log = require('../logger').child({ component: 'thumbnail' });
 
 function getThumbnail(doc, fullPath) {
   var thumbPath = path.join(config.thumbnailsPath, doc.id + '.jpg');
@@ -189,7 +190,7 @@ function generateBatch(docs) {
             }
           }).catch(function(err) {
             done++;
-            console.error('\nThumbnail generation failed for', doc.fullPath, err.message);
+            log.error({ file: doc.fullPath, err: { message: err.message } }, 'Thumbnail generation failed');
           });
         }));
       });

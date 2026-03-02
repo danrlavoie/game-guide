@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var scanner = require('../services/scanner');
+var log = require('../logger').child({ component: 'routes.scan' });
 
 var scanning = false;
 
@@ -24,7 +25,7 @@ router.post('/scan', function(req, res) {
     })
     .catch(function(err) {
       scanning = false;
-      console.error('Scan error:', err);
+      log.error({ err: err }, 'Scan failed');
       res.status(500).json({ error: 'Scan failed: ' + err.message });
     });
 });
