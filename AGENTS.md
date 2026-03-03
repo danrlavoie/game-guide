@@ -43,12 +43,12 @@ A client-server web app that serves PDF, CBZ, and CBR game manuals/strategy guid
 ## Database
 - SQLite at `data/game-guide.db`
 - Schema defined in `server/db.js`
-- Tables: `documents`, `devices`, `reading_progress`, `device_settings`
+- Tables: `documents`, `devices`, `reading_progress`, `device_settings`, `document_settings`
 
 ## Architecture Decisions - Do NOT Change
 - Server-side PDF rendering via `pdftoppm` (not PDF.js) - critical for iPad compatibility
 - `<img>` tags for page display (not `<canvas>`) - avoids 5MP canvas limit
-- 3-page preload window in viewer - keeps memory under control
+- 3-page preload window in viewer (6 in spread mode) - keeps memory under control
 - Hash-based routing (`#/path`) - no History API for simplicity
 - Cookie-based device UUID - no login system
 - Single Docker container with all dependencies

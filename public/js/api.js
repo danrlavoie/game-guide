@@ -75,6 +75,14 @@ var API = (function() {
       });
     },
 
+    getDocumentSettings: function(docId) {
+      return request('GET', '/api/documents/' + docId + '/settings');
+    },
+
+    saveDocumentSetting: function(docId, key, value) {
+      return request('PUT', '/api/documents/' + docId + '/settings', { key: key, value: value });
+    },
+
     getSettings: function() {
       return request('GET', '/api/settings');
     },

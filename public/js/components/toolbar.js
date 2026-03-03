@@ -52,6 +52,29 @@ var Toolbar = (function() {
     var right = document.createElement('div');
     right.className = 'viewer-toolbar-right';
 
+    // Spread toggle button [1|2]
+    var spreadBtn = document.createElement('button');
+    spreadBtn.className = 'viewer-spread-btn';
+    var spreadMode = options.spreadMode || 'single';
+    updateSpreadBtn(spreadBtn, spreadMode);
+    spreadBtn.addEventListener('click', function() {
+      if (options.onSpreadToggle) options.onSpreadToggle();
+    });
+    right.appendChild(spreadBtn);
+
+    // Alignment toggle button [L|R]
+    var alignBtn = document.createElement('button');
+    alignBtn.className = 'viewer-align-btn';
+    var page1Side = options.page1Side || 'left';
+    updateAlignBtn(alignBtn, page1Side);
+    if (spreadMode !== 'spread') {
+      alignBtn.style.display = 'none';
+    }
+    alignBtn.addEventListener('click', function() {
+      if (options.onAlignToggle) options.onAlignToggle();
+    });
+    right.appendChild(alignBtn);
+
     var downloadBtn = document.createElement('a');
     downloadBtn.className = 'viewer-download-btn';
     downloadBtn.textContent = 'Download';
@@ -62,10 +85,49 @@ var Toolbar = (function() {
     el.appendChild(center);
     el.appendChild(right);
 
+    function updateSpreadBtn(btn, mode) {
+      btn.innerHTML = '';
+      var label1 = document.createElement('span');
+      label1.textContent = '1';
+      label1.className = mode === 'single' ? 'toggle-option active' : 'toggle-option';
+      var sep = document.createElement('span');
+      sep.textContent = '|';
+      sep.className = 'toggle-sep';
+      var label2 = document.createElement('span');
+      label2.textContent = '2';
+      label2.className = mode === 'spread' ? 'toggle-option active' : 'toggle-option';
+      btn.appendChild(label1);
+      btn.appendChild(sep);
+      btn.appendChild(label2);
+    }
+
+    function updateAlignBtn(btn, side) {
+      btn.innerHTML = '';
+      var labelL = document.createElement('span');
+      labelL.textContent = 'L';
+      labelL.className = side === 'left' ? 'toggle-option active' : 'toggle-option';
+      var sep = document.createElement('span');
+      sep.textContent = '|';
+      sep.className = 'toggle-sep';
+      var labelR = document.createElement('span');
+      labelR.textContent = 'R';
+      labelR.className = side === 'right' ? 'toggle-option active' : 'toggle-option';
+      btn.appendChild(labelL);
+      btn.appendChild(sep);
+      btn.appendChild(labelR);
+    }
+
     return {
       el: el,
       setPage: function(page) {
         pageInput.value = String(page);
+      },
+      setSpreadMode: function(mode) {
+        updateSpreadBtn(spreadBtn, mode);
+        alignBtn.style.display = mode === 'spread' ? '' : 'none';
+      },
+      setPage1Side: function(side) {
+        updateAlignBtn(alignBtn, side);
       },
       show: function() {
         el.classList.remove('hidden');

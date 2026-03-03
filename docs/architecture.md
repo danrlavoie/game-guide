@@ -98,7 +98,7 @@ These constraints shaped the frontend architecture:
 
 | Constraint | Impact |
 |-----------|--------|
-| ~200-400MB available RAM | Server-side rendering, 3-page preload window |
+| ~200-400MB available RAM | Server-side rendering, 3-page preload window (6 in spread mode) |
 | 5-megapixel canvas limit | Use `<img>` tags, not `<canvas>` |
 | No Service Workers | No offline support, no caching strategies |
 | No Pointer Events | Use Touch Events + Mouse Events separately |
@@ -145,10 +145,22 @@ These constraints shaped the frontend architecture:
 | Column | Type | Description |
 |--------|------|-------------|
 | device_id | TEXT | FK to devices |
-| setting_key | TEXT | Setting name (e.g. 'theme') |
-| setting_value | TEXT | Setting value (e.g. 'dark') |
+| setting_key | TEXT | Setting name (e.g. 'theme', 'spread_mode') |
+| setting_value | TEXT | Setting value (e.g. 'dark', 'spread') |
 | updated_at | TEXT | ISO timestamp |
 | PRIMARY KEY | | (device_id, setting_key) |
+
+### document_settings
+| Column | Type | Description |
+|--------|------|-------------|
+| device_id | TEXT | FK to devices |
+| document_id | INTEGER | FK to documents |
+| setting_key | TEXT | Setting name (e.g. 'spread_mode', 'page1_side') |
+| setting_value | TEXT | Setting value (e.g. 'spread', 'right') |
+| updated_at | TEXT | ISO timestamp |
+| PRIMARY KEY | | (device_id, document_id, setting_key) |
+
+Per-document settings allow overriding device-level defaults for individual books. The viewer resolves settings with cascading priority: default → device setting → document-specific override.
 
 ## API Endpoints
 
@@ -162,6 +174,8 @@ These constraints shaped the frontend architecture:
 | GET | `/api/documents/:id/download` | Download original file |
 | GET | `/api/search?q=term` | Search by filename/path |
 | GET/PUT | `/api/documents/:id/progress` | Read/save reading progress |
+| GET | `/api/documents/:id/settings` | Get document settings for current device |
+| PUT | `/api/documents/:id/settings` | Upsert a document setting (`{ key, value }`) |
 | GET | `/api/settings` | Get all settings for current device |
 | PUT | `/api/settings` | Upsert a setting (`{ key, value }`) |
 | POST | `/api/scan` | Trigger directory re-scan |

@@ -234,6 +234,52 @@ router.get('/:id/content', function(req, res) {
   res.sendFile(fullPath);
 });
 
+// Get document settings for current device
+router.get('/:id/settings', function(req, res) {
+  var db = getDb();
+  var rows = db.prepare(
+    'SELECT setting_key, setting_value FROM document_settings WHERE device_id = ? AND document_id = ?'
+  ).all(req.deviceId, req.params.id);
+
+  var settings = {};
+  rows.forEach(function(row) {
+    settings[row.setting_key] = row.setting_value;
+  });
+
+  res.json(settings);
+});
+
+// Upsert a document setting for current device
+router.put('/:id/settings', function(req, res) {
+  var key = req.body.key;
+  var value = req.body.value;
+
+  if (!key || value === undefined || value === null) {
+    return res.status(400).json({ error: 'key and value are required' });
+  }
+
+  var db = getDb();
+  var doc = db.prepare('SELECT id FROM documents WHERE id = ?').get(req.params.id);
+  if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+  db.prepare(
+    'INSERT INTO document_settings (device_id, document_id, setting_key, setting_value, updated_at) ' +
+    'VALUES (?, ?, ?, ?, datetime(\'now\')) ' +
+    'ON CONFLICT (device_id, document_id, setting_key) DO UPDATE SET setting_value = ?, updated_at = datetime(\'now\')'
+  ).run(req.deviceId, req.params.id, key, String(value), String(value));
+
+  var rows = db.prepare(
+    'SELECT setting_key, setting_value FROM document_settings WHERE device_id = ? AND document_id = ?'
+  ).all(req.deviceId, req.params.id);
+
+  var settings = {};
+  rows.forEach(function(row) {
+    settings[row.setting_key] = row.setting_value;
+  });
+
+  res.json(settings);
+});
+
 // Download original file
 router.get('/:id/download', function(req, res) {
   var db = getDb();

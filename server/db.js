@@ -70,6 +70,17 @@ function initSchema() {
       PRIMARY KEY (device_id, setting_key),\
       FOREIGN KEY (device_id) REFERENCES devices(id)\
     );\
+    \
+    CREATE TABLE IF NOT EXISTS document_settings (\
+      device_id TEXT NOT NULL,\
+      document_id INTEGER NOT NULL,\
+      setting_key TEXT NOT NULL,\
+      setting_value TEXT NOT NULL,\
+      updated_at TEXT DEFAULT (datetime(\'now\')),\
+      PRIMARY KEY (device_id, document_id, setting_key),\
+      FOREIGN KEY (device_id) REFERENCES devices(id),\
+      FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE\
+    );\
   ');
 }
 

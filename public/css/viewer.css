@@ -80,6 +80,41 @@
   background: rgba(255,255,255,0.25);
 }
 
+.viewer-spread-btn,
+.viewer-align-btn {
+  color: white;
+  font-size: 13px;
+  padding: 6px 8px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 6px;
+  border: none;
+  line-height: 1;
+}
+
+.viewer-spread-btn:active,
+.viewer-align-btn:active {
+  background: rgba(255,255,255,0.3);
+}
+
+.viewer-spread-btn .toggle-option,
+.viewer-align-btn .toggle-option {
+  color: rgba(255,255,255,0.45);
+}
+
+.viewer-spread-btn .toggle-option.active,
+.viewer-align-btn .toggle-option.active {
+  color: #fff;
+  font-weight: bold;
+}
+
+.viewer-spread-btn .toggle-sep,
+.viewer-align-btn .toggle-sep {
+  color: rgba(255,255,255,0.3);
+  margin: 0 2px;
+}
+
 .viewer-download-btn {
   color: white;
   font-size: 13px;
@@ -108,6 +143,45 @@
 }
 
 .viewer-page-container img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Spread mode layout */
+.spread-wrapper {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.spread-slot {
+  -webkit-flex: 0 1 50%;
+  flex: 0 1 50%;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  height: 100%;
+  overflow: hidden;
+}
+
+.spread-slot-left {
+  -webkit-justify-content: flex-end;
+  justify-content: flex-end;
+}
+
+.spread-slot-right {
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+}
+
+.spread-slot img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;

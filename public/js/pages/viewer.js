@@ -8,14 +8,39 @@ var ViewerPage = (function() {
   var pageContainer = null;
   var saveTimer = null;
   var preloadedImages = {};
+  var spreadMode = 'single';
+  var page1Side = 'left';
 
   function render(container, docId) {
     container.innerHTML = '<div class="viewer"><div class="viewer-loading">Loading...</div></div>';
 
-    API.getDocument(docId).then(function(data) {
-      doc = data;
+    // Load document, device settings, and document settings in parallel
+    Promise.all([
+      API.getDocument(docId),
+      API.getSettings(),
+      API.getDocumentSettings(docId)
+    ]).then(function(results) {
+      doc = results[0];
+      var deviceSettings = results[1];
+      var docSettings = results[2];
+
       totalPages = doc.page_count;
       currentPage = doc.current_page || 1;
+
+      // Resolve spread mode: default -> device setting -> document override
+      spreadMode = 'single';
+      if (deviceSettings.spread_mode === 'spread') {
+        spreadMode = 'spread';
+      }
+      if (docSettings.spread_mode === 'single' || docSettings.spread_mode === 'spread') {
+        spreadMode = docSettings.spread_mode;
+      }
+
+      // Resolve page1Side: default -> document setting
+      page1Side = 'left';
+      if (docSettings.page1_side === 'left' || docSettings.page1_side === 'right') {
+        page1Side = docSettings.page1_side;
+      }
 
       buildViewer(container);
       showPage(currentPage);
@@ -36,6 +61,8 @@ var ViewerPage = (function() {
       currentPage: currentPage,
       totalPages: totalPages,
       downloadUrl: API.getDownloadUrl(doc.id),
+      spreadMode: spreadMode,
+      page1Side: page1Side,
       onBack: function() {
         cleanup();
         window.history.back();
@@ -43,12 +70,30 @@ var ViewerPage = (function() {
       onPageChange: function(page) {
         goToPage(page);
       },
+      onSpreadToggle: function() {
+        spreadMode = spreadMode === 'single' ? 'spread' : 'single';
+        toolbar.setSpreadMode(spreadMode);
+        updateContainerClass();
+        // Save as document-level override
+        API.saveDocumentSetting(doc.id, 'spread_mode', spreadMode).catch(function() {});
+        // Re-display current page with new mode
+        showPage(currentPage);
+      },
+      onAlignToggle: function() {
+        page1Side = page1Side === 'left' ? 'right' : 'left';
+        toolbar.setPage1Side(page1Side);
+        // Save as document-level setting
+        API.saveDocumentSetting(doc.id, 'page1_side', page1Side).catch(function() {});
+        // Re-display current page with new alignment
+        showPage(currentPage);
+      },
     });
     viewer.appendChild(toolbar.el);
 
     // Page container
     pageContainer = document.createElement('div');
     pageContainer.className = 'viewer-page-container';
+    updateContainerClass();
     viewer.appendChild(pageContainer);
 
     // Touch handling
@@ -71,40 +116,148 @@ var ViewerPage = (function() {
     container.appendChild(viewer);
   }
 
+  function updateContainerClass() {
+    if (!pageContainer) return;
+    if (spreadMode === 'spread') {
+      pageContainer.classList.add('spread-mode');
+    } else {
+      pageContainer.classList.remove('spread-mode');
+    }
+  }
+
+  function getSpreadPages(pageNum) {
+    if (spreadMode === 'single') return [pageNum];
+
+    if (page1Side === 'left') {
+      // Pages pair as: [1,2], [3,4], [5,6]...
+      var leftPage = (pageNum % 2 === 1) ? pageNum : pageNum - 1;
+      var rightPage = leftPage + 1;
+    } else {
+      // Page 1 on right: [null,1], [2,3], [4,5]...
+      if (pageNum === 1) return [null, 1];
+      var leftPage = (pageNum % 2 === 0) ? pageNum : pageNum - 1;
+      var rightPage = leftPage + 1;
+    }
+
+    if (rightPage > totalPages) return [leftPage, null];
+    return [leftPage, rightPage];
+  }
+
   function showPage(pageNum) {
     if (pageNum < 1 || pageNum > totalPages || !pageContainer) return;
 
-    currentPage = pageNum;
+    var pages = getSpreadPages(pageNum);
 
-    // Update toolbar
-    if (toolbar) toolbar.setPage(currentPage);
+    // In spread mode, normalize currentPage to the left-most real page of the pair
+    if (spreadMode === 'spread') {
+      var firstReal = pages[0] || pages[1];
+      currentPage = firstReal;
+    } else {
+      currentPage = pageNum;
+    }
+
+    // Update toolbar with the primary displayed page
+    var displayPage = pages[0] || pages[1];
+    if (toolbar) toolbar.setPage(displayPage);
 
     // Update progress bar
-    if (progressBar) progressBar.update(currentPage, totalPages);
+    if (progressBar) progressBar.update(displayPage, totalPages);
 
     // Show loading state
-    pageContainer.innerHTML = '<div class="viewer-loading">Loading page ' + currentPage + '...</div>';
+    pageContainer.innerHTML = '<div class="viewer-loading">Loading...</div>';
 
-    // Load and display the page image
-    var img = getImage(currentPage);
-    img.onload = function() {
-      if (currentPage !== pageNum) return; // Page changed while loading
-      pageContainer.innerHTML = '';
-      pageContainer.appendChild(img);
-    };
-    img.onerror = function() {
-      if (currentPage !== pageNum) return;
-      pageContainer.innerHTML = '<div class="viewer-loading">Error loading page</div>';
-    };
+    if (spreadMode === 'single') {
+      // Single page mode - unchanged behavior
+      var img = getImage(currentPage);
+      img.className = 'viewer-page-img';
+      var loadPage = currentPage;
+      img.onload = function() {
+        if (currentPage !== loadPage) return;
+        pageContainer.innerHTML = '';
+        pageContainer.appendChild(img);
+      };
+      img.onerror = function() {
+        if (currentPage !== loadPage) return;
+        pageContainer.innerHTML = '<div class="viewer-loading">Error loading page</div>';
+      };
+      if (img.complete && img.naturalWidth) {
+        pageContainer.innerHTML = '';
+        pageContainer.appendChild(img);
+      }
+    } else {
+      // Spread mode - two images side by side
+      var loadTarget = currentPage;
+      var leftPage = pages[0];
+      var rightPage = pages[1];
+      var loaded = { left: !leftPage, right: !rightPage };
 
-    // If already loaded, trigger display
-    if (img.complete && img.naturalWidth) {
-      pageContainer.innerHTML = '';
-      pageContainer.appendChild(img);
+      var wrapper = document.createElement('div');
+      wrapper.className = 'spread-wrapper';
+
+      var leftSlot = document.createElement('div');
+      leftSlot.className = 'spread-slot spread-slot-left';
+      var rightSlot = document.createElement('div');
+      rightSlot.className = 'spread-slot spread-slot-right';
+
+      function tryFinish() {
+        if (loaded.left && loaded.right && currentPage === loadTarget) {
+          pageContainer.innerHTML = '';
+          pageContainer.appendChild(wrapper);
+        }
+      }
+
+      if (leftPage) {
+        var leftImg = getImage(leftPage);
+        leftImg.className = 'viewer-page-img';
+        leftImg.onload = function() {
+          if (currentPage !== loadTarget) return;
+          leftSlot.innerHTML = '';
+          leftSlot.appendChild(leftImg);
+          loaded.left = true;
+          tryFinish();
+        };
+        leftImg.onerror = function() {
+          loaded.left = true;
+          tryFinish();
+        };
+        if (leftImg.complete && leftImg.naturalWidth) {
+          leftSlot.appendChild(leftImg);
+          loaded.left = true;
+        }
+      }
+
+      if (rightPage) {
+        var rightImg = getImage(rightPage);
+        rightImg.className = 'viewer-page-img';
+        rightImg.onload = function() {
+          if (currentPage !== loadTarget) return;
+          rightSlot.innerHTML = '';
+          rightSlot.appendChild(rightImg);
+          loaded.right = true;
+          tryFinish();
+        };
+        rightImg.onerror = function() {
+          loaded.right = true;
+          tryFinish();
+        };
+        if (rightImg.complete && rightImg.naturalWidth) {
+          rightSlot.appendChild(rightImg);
+          loaded.right = true;
+        }
+      }
+
+      wrapper.appendChild(leftSlot);
+      wrapper.appendChild(rightSlot);
+
+      // Show immediately if both already loaded
+      if (loaded.left && loaded.right) {
+        pageContainer.innerHTML = '';
+        pageContainer.appendChild(wrapper);
+      }
     }
 
     // Preload adjacent pages
-    preloadAdjacent(pageNum);
+    preloadAdjacent(currentPage);
 
     // Save progress (debounced)
     scheduleSave();
@@ -122,12 +275,42 @@ var ViewerPage = (function() {
   }
 
   function preloadAdjacent(pageNum) {
-    // Keep only 3 pages in memory: prev, current, next
     var keep = {};
-    for (var i = pageNum - 1; i <= pageNum + 1; i++) {
-      if (i >= 1 && i <= totalPages) {
-        keep[i] = true;
-        getImage(i); // Trigger preload
+
+    if (spreadMode === 'single') {
+      // Keep 3 pages: prev, current, next
+      for (var i = pageNum - 1; i <= pageNum + 1; i++) {
+        if (i >= 1 && i <= totalPages) {
+          keep[i] = true;
+          getImage(i);
+        }
+      }
+    } else {
+      // Keep current pair + prev pair + next pair (up to 6 pages)
+      var currentPair = getSpreadPages(pageNum);
+      var step = 2;
+      var prevStart = (currentPair[0] || currentPair[1]) - step;
+      var nextStart = (currentPair[1] || currentPair[0]) + 1;
+
+      // Current pair
+      currentPair.forEach(function(p) {
+        if (p && p >= 1 && p <= totalPages) { keep[p] = true; getImage(p); }
+      });
+
+      // Previous pair
+      if (prevStart >= 1) {
+        var prevPair = getSpreadPages(prevStart);
+        prevPair.forEach(function(p) {
+          if (p && p >= 1 && p <= totalPages) { keep[p] = true; getImage(p); }
+        });
+      }
+
+      // Next pair
+      if (nextStart <= totalPages) {
+        var nextPair = getSpreadPages(nextStart);
+        nextPair.forEach(function(p) {
+          if (p && p >= 1 && p <= totalPages) { keep[p] = true; getImage(p); }
+        });
       }
     }
 
@@ -141,14 +324,18 @@ var ViewerPage = (function() {
   }
 
   function nextPage() {
-    if (currentPage < totalPages) {
-      showPage(currentPage + 1);
+    var step = spreadMode === 'spread' ? 2 : 1;
+    var next = currentPage + step;
+    if (next <= totalPages) {
+      showPage(next);
     }
   }
 
   function prevPage() {
-    if (currentPage > 1) {
-      showPage(currentPage - 1);
+    var step = spreadMode === 'spread' ? 2 : 1;
+    var prev = currentPage - step;
+    if (prev >= 1) {
+      showPage(prev);
     }
   }
 
@@ -162,9 +349,7 @@ var ViewerPage = (function() {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(function() {
       if (doc) {
-        API.saveProgress(doc.id, currentPage).catch(function(err) {
-          console.error('Failed to save progress:', err);
-        });
+        API.saveProgress(doc.id, currentPage).catch(function() {});
       }
     }, 2000);
   }
@@ -196,6 +381,8 @@ var ViewerPage = (function() {
     toolbar = null;
     progressBar = null;
     pageContainer = null;
+    spreadMode = 'single';
+    page1Side = 'left';
   }
 
   return { render: render, cleanup: cleanup };
