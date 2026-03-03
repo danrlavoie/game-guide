@@ -40,6 +40,16 @@
   color: var(--placeholder-color);
 }
 
+.doc-card-bookmark-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  color: #f1c40f;
+  font-size: 16px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
 .doc-card-info {
   padding: 8px 10px;
 }

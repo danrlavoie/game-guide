@@ -116,6 +116,27 @@ router.get('/', function (req, res) {
       doc.last_read = p ? p.last_read_at : null;
       return doc;
     });
+
+    // Attach bookmark counts for this device
+    var bmStmt = db.prepare(
+      '\
+      SELECT document_id, COUNT(*) as cnt \
+      FROM bookmarks \
+      WHERE device_id = ? AND document_id IN (' +
+        placeholders +
+        ') \
+      GROUP BY document_id\
+    '
+    );
+    var bmRows = bmStmt.all.apply(bmStmt, [req.deviceId].concat(docIds));
+    var bmMap = {};
+    bmRows.forEach(function (r) {
+      bmMap[r.document_id] = r.cnt;
+    });
+    documents = documents.map(function (doc) {
+      doc.bookmark_count = bmMap[doc.id] || 0;
+      return doc;
+    });
   }
 
   res.json({
@@ -336,6 +357,122 @@ router.get('/:id/download', function (req, res) {
 
   var fullPath = path.join(config.documentsPath, doc.file_path);
   res.download(fullPath, doc.file_name);
+});
+
+// List bookmarks for a document
+router.get('/:id/bookmarks', function (req, res) {
+  var db = getDb();
+  var doc = db
+    .prepare('SELECT id FROM documents WHERE id = ?')
+    .get(req.params.id);
+  if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+  var bookmarks = db
+    .prepare(
+      '\
+    SELECT id, page_number, label, created_at \
+    FROM bookmarks \
+    WHERE device_id = ? AND document_id = ? \
+    ORDER BY page_number\
+  '
+    )
+    .all(req.deviceId, req.params.id);
+
+  res.json({ bookmarks: bookmarks });
+});
+
+// Add a bookmark
+router.post('/:id/bookmarks', function (req, res) {
+  var db = getDb();
+  var doc = db
+    .prepare('SELECT id, page_count FROM documents WHERE id = ?')
+    .get(req.params.id);
+  if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+  var pageNumber = parseInt(req.body.page_number, 10);
+  if (isNaN(pageNumber) || pageNumber < 1 || pageNumber > doc.page_count) {
+    return res.status(400).json({ error: 'Invalid page number' });
+  }
+
+  var label = String(req.body.label || '')
+    .trim()
+    .substring(0, 100);
+
+  // INSERT OR IGNORE for idempotency
+  db.prepare(
+    '\
+    INSERT OR IGNORE INTO bookmarks (device_id, document_id, page_number, label) \
+    VALUES (?, ?, ?, ?)\
+  '
+  ).run(req.deviceId, req.params.id, pageNumber, label);
+
+  var bookmark = db
+    .prepare(
+      '\
+    SELECT id, page_number, label, created_at \
+    FROM bookmarks \
+    WHERE device_id = ? AND document_id = ? AND page_number = ?\
+  '
+    )
+    .get(req.deviceId, req.params.id, pageNumber);
+
+  res.json({ bookmark: bookmark });
+});
+
+// Update a bookmark label
+router.put('/:id/bookmarks/:bookmarkId', function (req, res) {
+  var db = getDb();
+  var doc = db
+    .prepare('SELECT id FROM documents WHERE id = ?')
+    .get(req.params.id);
+  if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+  var label = String(req.body.label || '')
+    .trim()
+    .substring(0, 100);
+
+  var result = db
+    .prepare(
+      '\
+    UPDATE bookmarks SET label = ? \
+    WHERE id = ? AND device_id = ? AND document_id = ?\
+  '
+    )
+    .run(label, req.params.bookmarkId, req.deviceId, req.params.id);
+
+  if (result.changes === 0) {
+    return res.status(404).json({ error: 'Bookmark not found' });
+  }
+
+  var bookmark = db
+    .prepare(
+      '\
+    SELECT id, page_number, label, created_at \
+    FROM bookmarks WHERE id = ?\
+  '
+    )
+    .get(req.params.bookmarkId);
+
+  res.json({ bookmark: bookmark });
+});
+
+// Delete a bookmark
+router.delete('/:id/bookmarks/:bookmarkId', function (req, res) {
+  var db = getDb();
+  var result = db
+    .prepare(
+      '\
+    DELETE FROM bookmarks \
+    WHERE id = ? AND device_id = ? AND document_id = ?\
+  '
+    )
+    .run(req.params.bookmarkId, req.deviceId, req.params.id);
+
+  if (result.changes === 0) {
+    return res.status(404).json({ error: 'Bookmark not found' });
+  }
+
+  res.json({ success: true });
 });
 
 module.exports = router;

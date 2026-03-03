@@ -9,21 +9,25 @@ var ViewerPage = (function () {
   var preloadedImages = {};
   var spreadMode = 'single';
   var page1Side = 'left';
+  var bookmarks = [];
+  var bookmarkPanel = null;
 
   function render(container, docId) {
     container.innerHTML =
       '<div class="viewer"><div class="viewer-loading">Loading...</div></div>';
 
-    // Load document, device settings, and document settings in parallel
+    // Load document, device settings, document settings, and bookmarks in parallel
     Promise.all([
       API.getDocument(docId),
       API.getSettings(),
       API.getDocumentSettings(docId),
+      API.getBookmarks(docId),
     ])
       .then(function (results) {
         doc = results[0];
         var deviceSettings = results[1];
         var docSettings = results[2];
+        bookmarks = results[3].bookmarks || [];
 
         totalPages = doc.page_count;
         currentPage = doc.current_page || 1;
@@ -100,8 +104,51 @@ var ViewerPage = (function () {
         // Re-display current page with new alignment
         showPage(currentPage);
       },
+      onBookmarkToggle: function () {
+        toggleBookmark();
+      },
+      onBookmarksListToggle: function () {
+        if (bookmarkPanel.isVisible()) {
+          bookmarkPanel.hide();
+        } else {
+          bookmarkPanel.show(bookmarks);
+        }
+      },
     });
     viewer.appendChild(toolbar.el);
+
+    // Bookmark panel
+    bookmarkPanel = BookmarkPanel.create({
+      onNavigate: function (pageNumber) {
+        bookmarkPanel.hide();
+        goToPage(pageNumber);
+      },
+      onDelete: function (bookmarkId) {
+        API.deleteBookmark(doc.id, bookmarkId)
+          .then(function () {
+            bookmarks = bookmarks.filter(function (bm) {
+              return bm.id !== bookmarkId;
+            });
+            bookmarkPanel.show(bookmarks);
+            updateBookmarkState();
+          })
+          .catch(function () {});
+      },
+      onEditLabel: function (bookmarkId, newLabel) {
+        API.updateBookmark(doc.id, bookmarkId, newLabel)
+          .then(function (data) {
+            bookmarks = bookmarks.map(function (bm) {
+              if (bm.id === bookmarkId) {
+                return data.bookmark;
+              }
+              return bm;
+            });
+            bookmarkPanel.show(bookmarks);
+          })
+          .catch(function () {});
+      },
+    });
+    viewer.appendChild(bookmarkPanel.el);
 
     // Page container
     pageContainer = document.createElement('div');
@@ -183,6 +230,7 @@ var ViewerPage = (function () {
     // Update toolbar with the primary displayed page
     var displayPage = pages[0] || pages[1];
     if (toolbar) toolbar.setPage(displayPage);
+    updateBookmarkState();
 
     // Update progress bar
     if (progressBar) progressBar.update(displayPage, totalPages);
@@ -388,6 +436,47 @@ var ViewerPage = (function () {
     }, 2000);
   }
 
+  function isPageBookmarked(pageNum) {
+    for (var i = 0; i < bookmarks.length; i++) {
+      if (bookmarks[i].page_number === pageNum) return bookmarks[i];
+    }
+    return null;
+  }
+
+  function updateBookmarkState() {
+    if (!toolbar) return;
+    toolbar.setBookmarked(!!isPageBookmarked(currentPage));
+  }
+
+  function toggleBookmark() {
+    var existing = isPageBookmarked(currentPage);
+    if (existing) {
+      API.deleteBookmark(doc.id, existing.id)
+        .then(function () {
+          bookmarks = bookmarks.filter(function (bm) {
+            return bm.id !== existing.id;
+          });
+          updateBookmarkState();
+          if (bookmarkPanel.isVisible()) {
+            bookmarkPanel.show(bookmarks);
+          }
+        })
+        .catch(function () {});
+    } else {
+      API.addBookmark(doc.id, currentPage, '')
+        .then(function (data) {
+          bookmarks.push(data.bookmark);
+          bookmarks.sort(function (a, b) {
+            return a.page_number - b.page_number;
+          });
+          updateBookmarkState();
+          // Open panel with new bookmark focused for label editing
+          bookmarkPanel.show(bookmarks, data.bookmark.id);
+        })
+        .catch(function () {});
+    }
+  }
+
   function handleKeyboard(e) {
     if (e.target.tagName === 'INPUT') return;
 
@@ -417,6 +506,8 @@ var ViewerPage = (function () {
     pageContainer = null;
     spreadMode = 'single';
     page1Side = 'left';
+    bookmarks = [];
+    bookmarkPanel = null;
   }
 
   return { render: render, cleanup: cleanup };

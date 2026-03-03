@@ -10,6 +10,11 @@ var DocumentCard = (function () {
     card.className = 'doc-card';
     card.setAttribute('data-id', doc.id);
 
+    var bookmarkBadge = '';
+    if (doc.bookmark_count > 0) {
+      bookmarkBadge = '<span class="doc-card-bookmark-badge">\u2605</span>';
+    }
+
     var thumbHtml =
       '<div class="doc-card-thumb">' +
       '<img src="' +
@@ -18,6 +23,7 @@ var DocumentCard = (function () {
       'onerror="this.parentNode.innerHTML=\'<span class=placeholder>' +
       doc.file_type.toUpperCase() +
       '</span>\'">' +
+      bookmarkBadge +
       '</div>';
 
     var progressHtml = '';

@@ -87,6 +87,32 @@ var API = (function () {
       });
     },
 
+    getBookmarks: function (docId) {
+      return request('GET', '/api/documents/' + docId + '/bookmarks');
+    },
+
+    addBookmark: function (docId, pageNumber, label) {
+      return request('POST', '/api/documents/' + docId + '/bookmarks', {
+        page_number: pageNumber,
+        label: label || '',
+      });
+    },
+
+    updateBookmark: function (docId, bookmarkId, label) {
+      return request(
+        'PUT',
+        '/api/documents/' + docId + '/bookmarks/' + bookmarkId,
+        { label: label }
+      );
+    },
+
+    deleteBookmark: function (docId, bookmarkId) {
+      return request(
+        'DELETE',
+        '/api/documents/' + docId + '/bookmarks/' + bookmarkId
+      );
+    },
+
     getSettings: function () {
       return request('GET', '/api/settings');
     },

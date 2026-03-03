@@ -227,6 +227,176 @@
   transition: width 0.3s;
 }
 
+/* Bookmark buttons */
+.viewer-bookmark-btn,
+.viewer-bookmarks-list-btn {
+  color: white;
+  font-size: 16px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 6px;
+  border: none;
+  line-height: 1;
+}
+
+.viewer-bookmark-btn:active,
+.viewer-bookmarks-list-btn:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.viewer-bookmark-btn.active {
+  color: #f1c40f;
+  background: rgba(241, 196, 15, 0.2);
+}
+
+/* Bookmark panel */
+.bookmark-panel {
+  position: absolute;
+  top: 44px;
+  right: 8px;
+  width: 280px;
+  max-height: 60%;
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 6px;
+  z-index: 120;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bookmark-panel-header {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.bookmark-panel-close {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.bookmark-panel-close:active {
+  color: white;
+}
+
+.bookmark-panel-list {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bookmark-panel-empty {
+  padding: 16px 12px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 13px;
+  text-align: center;
+  font-style: italic;
+}
+
+.bookmark-panel-item {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.bookmark-panel-item:last-child {
+  border-bottom: none;
+}
+
+.bookmark-panel-info {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-flex: 1;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.bookmark-panel-page {
+  color: #f1c40f;
+  font-size: 12px;
+  font-weight: 500;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+.bookmark-panel-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookmark-panel-actions {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-shrink: 0;
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+
+.bookmark-panel-edit-btn,
+.bookmark-panel-del-btn {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.bookmark-panel-edit-btn:active,
+.bookmark-panel-del-btn:active {
+  color: white;
+}
+
+.bookmark-panel-del-btn {
+  color: rgba(231, 76, 60, 0.7);
+}
+
+.bookmark-panel-del-btn:active {
+  color: #e74c3c;
+}
+
+.bookmark-panel-input {
+  width: 100%;
+  padding: 4px 6px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 13px;
+}
+
+.bookmark-panel-input:focus {
+  border-color: #3498db;
+  background: rgba(255, 255, 255, 0.2);
+}
+
 /* Page loading indicator */
 .viewer-loading {
   position: absolute;

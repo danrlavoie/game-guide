@@ -16,6 +16,7 @@ var frontendGlobals = {
   Toolbar: 'writable',
   TouchHandler: 'writable',
   ProgressBar: 'writable',
+  BookmarkPanel: 'writable',
 };
 
 module.exports = [
@@ -58,7 +59,7 @@ module.exports = [
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern:
-            '^(API|Router|HomePage|BrowsePage|SearchPage|ViewerPage|TextViewerPage|SettingsPage|DocumentCard|Toolbar|TouchHandler|ProgressBar)$',
+            '^(API|Router|HomePage|BrowsePage|SearchPage|ViewerPage|TextViewerPage|SettingsPage|DocumentCard|Toolbar|TouchHandler|ProgressBar|BookmarkPanel)$',
           caughtErrorsIgnorePattern: '^_',
         },
       ],

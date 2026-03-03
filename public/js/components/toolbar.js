@@ -74,6 +74,26 @@ var Toolbar = (function () {
     });
     right.appendChild(alignBtn);
 
+    // Bookmark toggle button (star)
+    var bookmarkBtn = document.createElement('button');
+    bookmarkBtn.className = 'viewer-bookmark-btn';
+    bookmarkBtn.textContent = '\u2606';
+    bookmarkBtn.title = 'Bookmark this page';
+    bookmarkBtn.addEventListener('click', function () {
+      if (options.onBookmarkToggle) options.onBookmarkToggle();
+    });
+    right.appendChild(bookmarkBtn);
+
+    // Bookmarks list toggle button
+    var bookmarksListBtn = document.createElement('button');
+    bookmarksListBtn.className = 'viewer-bookmarks-list-btn';
+    bookmarksListBtn.textContent = '\u2630';
+    bookmarksListBtn.title = 'View bookmarks';
+    bookmarksListBtn.addEventListener('click', function () {
+      if (options.onBookmarksListToggle) options.onBookmarksListToggle();
+    });
+    right.appendChild(bookmarksListBtn);
+
     var downloadBtn = document.createElement('a');
     downloadBtn.className = 'viewer-download-btn';
     downloadBtn.textContent = 'Download';
@@ -131,6 +151,14 @@ var Toolbar = (function () {
       },
       setPage1Side: function (side) {
         updateAlignBtn(alignBtn, side);
+      },
+      setBookmarked: function (isBookmarked) {
+        bookmarkBtn.textContent = isBookmarked ? '\u2605' : '\u2606';
+        if (isBookmarked) {
+          bookmarkBtn.classList.add('active');
+        } else {
+          bookmarkBtn.classList.remove('active');
+        }
       },
       show: function () {
         el.classList.remove('hidden');

@@ -82,6 +82,18 @@ function initSchema() {
       FOREIGN KEY (device_id) REFERENCES devices(id),\
       FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE\
     );\
+    \
+    CREATE TABLE IF NOT EXISTS bookmarks (\
+      id INTEGER PRIMARY KEY AUTOINCREMENT,\
+      device_id TEXT NOT NULL,\
+      document_id INTEGER NOT NULL,\
+      page_number INTEGER NOT NULL,\
+      label TEXT DEFAULT '',\
+      created_at TEXT DEFAULT (datetime('now')),\
+      UNIQUE (device_id, document_id, page_number),\
+      FOREIGN KEY (device_id) REFERENCES devices(id),\
+      FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE\
+    );\
   "
   );
 }
