@@ -24,7 +24,8 @@ function getDb() {
 }
 
 function initSchema() {
-  db.exec('\
+  db.exec(
+    "\
     CREATE TABLE IF NOT EXISTS documents (\
       id INTEGER PRIMARY KEY AUTOINCREMENT,\
       file_path TEXT UNIQUE NOT NULL,\
@@ -32,26 +33,26 @@ function initSchema() {
       file_type TEXT NOT NULL,\
       file_size INTEGER NOT NULL,\
       page_count INTEGER DEFAULT 0,\
-      parent_folder TEXT NOT NULL DEFAULT \'\',\
+      parent_folder TEXT NOT NULL DEFAULT '',\
       file_hash TEXT,\
       file_mtime REAL,\
       thumbnail_generated INTEGER DEFAULT 0,\
-      created_at TEXT DEFAULT (datetime(\'now\')),\
-      updated_at TEXT DEFAULT (datetime(\'now\'))\
+      created_at TEXT DEFAULT (datetime('now')),\
+      updated_at TEXT DEFAULT (datetime('now'))\
     );\
     \
     CREATE TABLE IF NOT EXISTS devices (\
       id TEXT PRIMARY KEY,\
       ip_address TEXT,\
       user_agent TEXT,\
-      last_seen_at TEXT DEFAULT (datetime(\'now\'))\
+      last_seen_at TEXT DEFAULT (datetime('now'))\
     );\
     \
     CREATE TABLE IF NOT EXISTS reading_progress (\
       device_id TEXT NOT NULL,\
       document_id INTEGER NOT NULL,\
       current_page INTEGER NOT NULL DEFAULT 1,\
-      last_read_at TEXT DEFAULT (datetime(\'now\')),\
+      last_read_at TEXT DEFAULT (datetime('now')),\
       PRIMARY KEY (device_id, document_id),\
       FOREIGN KEY (device_id) REFERENCES devices(id),\
       FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE\
@@ -66,7 +67,7 @@ function initSchema() {
       device_id TEXT NOT NULL,\
       setting_key TEXT NOT NULL,\
       setting_value TEXT NOT NULL,\
-      updated_at TEXT DEFAULT (datetime(\'now\')),\
+      updated_at TEXT DEFAULT (datetime('now')),\
       PRIMARY KEY (device_id, setting_key),\
       FOREIGN KEY (device_id) REFERENCES devices(id)\
     );\
@@ -76,19 +77,20 @@ function initSchema() {
       document_id INTEGER NOT NULL,\
       setting_key TEXT NOT NULL,\
       setting_value TEXT NOT NULL,\
-      updated_at TEXT DEFAULT (datetime(\'now\')),\
+      updated_at TEXT DEFAULT (datetime('now')),\
       PRIMARY KEY (device_id, document_id, setting_key),\
       FOREIGN KEY (device_id) REFERENCES devices(id),\
       FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE\
     );\
-  ');
+  "
+  );
 }
 
 function migrateSchema() {
   // Add file_mtime column if missing (migration for existing databases)
   try {
     db.exec('ALTER TABLE documents ADD COLUMN file_mtime REAL');
-  } catch (err) {
+  } catch (_err) {
     // Column already exists — ignore
   }
 }

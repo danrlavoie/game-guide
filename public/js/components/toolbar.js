@@ -1,5 +1,4 @@
-var Toolbar = (function() {
-
+var Toolbar = (function () {
   function create(options) {
     var el = document.createElement('div');
     el.className = 'viewer-toolbar';
@@ -10,7 +9,7 @@ var Toolbar = (function() {
     var backBtn = document.createElement('button');
     backBtn.className = 'viewer-back-btn';
     backBtn.textContent = 'Back';
-    backBtn.addEventListener('click', function() {
+    backBtn.addEventListener('click', function () {
       if (options.onBack) options.onBack();
     });
     left.appendChild(backBtn);
@@ -32,7 +31,7 @@ var Toolbar = (function() {
     totalLabel.className = 'viewer-page-info';
     totalLabel.textContent = ' / ' + (options.totalPages || 1);
 
-    pageInput.addEventListener('change', function() {
+    pageInput.addEventListener('change', function () {
       var val = parseInt(pageInput.value, 10);
       if (val >= 1 && val <= options.totalPages && options.onPageChange) {
         options.onPageChange(val);
@@ -40,7 +39,7 @@ var Toolbar = (function() {
     });
 
     // Prevent keyboard from messing with page on blur
-    pageInput.addEventListener('keydown', function(e) {
+    pageInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.keyCode === 13) {
         pageInput.blur();
       }
@@ -57,7 +56,7 @@ var Toolbar = (function() {
     spreadBtn.className = 'viewer-spread-btn';
     var spreadMode = options.spreadMode || 'single';
     updateSpreadBtn(spreadBtn, spreadMode);
-    spreadBtn.addEventListener('click', function() {
+    spreadBtn.addEventListener('click', function () {
       if (options.onSpreadToggle) options.onSpreadToggle();
     });
     right.appendChild(spreadBtn);
@@ -70,7 +69,7 @@ var Toolbar = (function() {
     if (spreadMode !== 'spread') {
       alignBtn.style.display = 'none';
     }
-    alignBtn.addEventListener('click', function() {
+    alignBtn.addEventListener('click', function () {
       if (options.onAlignToggle) options.onAlignToggle();
     });
     right.appendChild(alignBtn);
@@ -89,13 +88,15 @@ var Toolbar = (function() {
       btn.innerHTML = '';
       var label1 = document.createElement('span');
       label1.textContent = '1';
-      label1.className = mode === 'single' ? 'toggle-option active' : 'toggle-option';
+      label1.className =
+        mode === 'single' ? 'toggle-option active' : 'toggle-option';
       var sep = document.createElement('span');
       sep.textContent = '|';
       sep.className = 'toggle-sep';
       var label2 = document.createElement('span');
       label2.textContent = '2';
-      label2.className = mode === 'spread' ? 'toggle-option active' : 'toggle-option';
+      label2.className =
+        mode === 'spread' ? 'toggle-option active' : 'toggle-option';
       btn.appendChild(label1);
       btn.appendChild(sep);
       btn.appendChild(label2);
@@ -105,13 +106,15 @@ var Toolbar = (function() {
       btn.innerHTML = '';
       var labelL = document.createElement('span');
       labelL.textContent = 'L';
-      labelL.className = side === 'left' ? 'toggle-option active' : 'toggle-option';
+      labelL.className =
+        side === 'left' ? 'toggle-option active' : 'toggle-option';
       var sep = document.createElement('span');
       sep.textContent = '|';
       sep.className = 'toggle-sep';
       var labelR = document.createElement('span');
       labelR.textContent = 'R';
-      labelR.className = side === 'right' ? 'toggle-option active' : 'toggle-option';
+      labelR.className =
+        side === 'right' ? 'toggle-option active' : 'toggle-option';
       btn.appendChild(labelL);
       btn.appendChild(sep);
       btn.appendChild(labelR);
@@ -119,26 +122,26 @@ var Toolbar = (function() {
 
     return {
       el: el,
-      setPage: function(page) {
+      setPage: function (page) {
         pageInput.value = String(page);
       },
-      setSpreadMode: function(mode) {
+      setSpreadMode: function (mode) {
         updateSpreadBtn(spreadBtn, mode);
         alignBtn.style.display = mode === 'spread' ? '' : 'none';
       },
-      setPage1Side: function(side) {
+      setPage1Side: function (side) {
         updateAlignBtn(alignBtn, side);
       },
-      show: function() {
+      show: function () {
         el.classList.remove('hidden');
       },
-      hide: function() {
+      hide: function () {
         el.classList.add('hidden');
       },
-      toggle: function() {
+      toggle: function () {
         el.classList.toggle('hidden');
       },
-      isHidden: function() {
+      isHidden: function () {
         return el.classList.contains('hidden');
       },
     };

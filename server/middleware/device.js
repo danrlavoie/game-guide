@@ -21,14 +21,16 @@ function deviceMiddleware(req, res, next) {
   var ip = req.ip || req.connection.remoteAddress;
   var ua = req.headers['user-agent'] || '';
 
-  db.prepare('\
+  db.prepare(
+    "\
     INSERT INTO devices (id, ip_address, user_agent, last_seen_at) \
-    VALUES (?, ?, ?, datetime(\'now\')) \
+    VALUES (?, ?, ?, datetime('now')) \
     ON CONFLICT(id) DO UPDATE SET \
       ip_address = excluded.ip_address, \
       user_agent = excluded.user_agent, \
-      last_seen_at = datetime(\'now\')\
-  ').run(deviceId, ip, ua);
+      last_seen_at = datetime('now')\
+  "
+  ).run(deviceId, ip, ua);
 
   req.deviceId = deviceId;
   next();

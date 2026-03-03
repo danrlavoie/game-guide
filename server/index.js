@@ -23,31 +23,44 @@ app.use('/api/settings', require('./routes/settings'));
 app.use('/api', require('./routes/scan'));
 
 // Health check
-app.get('/api/health', function(req, res) {
+app.get('/api/health', function (req, res) {
   res.json({ status: 'ok', documentsPath: config.documentsPath });
 });
 
 // SPA fallback - serve index.html for non-API routes
-app.get('*', function(req, res) {
+app.get('*', function (req, res) {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
 // Initialize database and start server
 getDb();
 
-app.listen(config.port, function() {
-  log.info({ port: config.port, documentsPath: config.documentsPath, dataPath: config.dataPath }, 'Server started');
+app.listen(config.port, function () {
+  log.info(
+    {
+      port: config.port,
+      documentsPath: config.documentsPath,
+      dataPath: config.dataPath,
+    },
+    'Server started'
+  );
 
   // Run initial scan on startup
   var scanner = require('./services/scanner');
-  scanner.scan().then(function(scanResult) {
-    var r = scanResult.result;
-    log.info({ added: r.added, updated: r.updated, removed: r.removed }, 'Initial scan complete');
-    // Background work (page counts + thumbnails) continues asynchronously
-    return scanResult.backgroundWork;
-  }).catch(function(err) {
-    log.error({ err: err }, 'Initial scan failed');
-  });
+  scanner
+    .scan()
+    .then(function (scanResult) {
+      var r = scanResult.result;
+      log.info(
+        { added: r.added, updated: r.updated, removed: r.removed },
+        'Initial scan complete'
+      );
+      // Background work (page counts + thumbnails) continues asynchronously
+      return scanResult.backgroundWork;
+    })
+    .catch(function (err) {
+      log.error({ err: err }, 'Initial scan failed');
+    });
 });
 
 module.exports = app;

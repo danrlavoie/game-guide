@@ -1,25 +1,22 @@
-var BrowsePage = (function() {
-
+var BrowsePage = (function () {
   var currentPage = 1;
   var currentFolder = '';
-  var allLoaded = false;
 
   function render(container, folderPath) {
     currentFolder = folderPath || '';
     currentPage = 1;
-    allLoaded = false;
 
     container.innerHTML =
       '<div class="header">' +
-        '<a href="#/" class="header-back">Home</a>' +
-        '<h1>Browse</h1>' +
-        '<span></span>' +
+      '<a href="#/" class="header-back">Home</a>' +
+      '<h1>Browse</h1>' +
+      '<span></span>' +
       '</div>' +
       '<div class="page">' +
-        '<div id="breadcrumbs"></div>' +
-        '<div id="folders-section"></div>' +
-        '<div id="docs-section"></div>' +
-        '<div id="load-more-section"></div>' +
+      '<div id="breadcrumbs"></div>' +
+      '<div id="folders-section"></div>' +
+      '<div id="docs-section"></div>' +
+      '<div id="load-more-section"></div>' +
       '</div>';
 
     renderBreadcrumbs();
@@ -36,13 +33,18 @@ var BrowsePage = (function() {
     if (currentFolder) {
       var parts = currentFolder.split('/');
       var accumulated = '';
-      parts.forEach(function(part, i) {
+      parts.forEach(function (part, i) {
         accumulated += (i > 0 ? '/' : '') + part;
         crumbs += '<span>/</span>';
         if (i === parts.length - 1) {
           crumbs += '<strong>' + escapeHtml(part) + '</strong>';
         } else {
-          crumbs += '<a href="#/browse/' + encodeURI(accumulated) + '">' + escapeHtml(part) + '</a>';
+          crumbs +=
+            '<a href="#/browse/' +
+            encodeURI(accumulated) +
+            '">' +
+            escapeHtml(part) +
+            '</a>';
         }
       });
     }
@@ -60,17 +62,21 @@ var BrowsePage = (function() {
     }
 
     API.getDocuments({ folder: currentFolder, page: currentPage, limit: 50 })
-      .then(function(data) {
+      .then(function (data) {
         // Render folders (only on first page)
         if (currentPage === 1) {
           var foldersEl = document.getElementById('folders-section');
           if (foldersEl && data.folders && data.folders.length > 0) {
             var html = '<div class="folder-list">';
-            data.folders.forEach(function(folder) {
-              html += '<div class="folder-item" onclick="window.location.hash=\'#/browse/' +
-                encodeURI(folder.path) + '\'">' +
+            data.folders.forEach(function (folder) {
+              html +=
+                '<div class="folder-item" onclick="window.location.hash=\'#/browse/' +
+                encodeURI(folder.path) +
+                '\'">' +
                 '<span class="folder-icon">&#128193;</span>' +
-                '<span class="folder-name">' + escapeHtml(folder.name) + '</span>' +
+                '<span class="folder-name">' +
+                escapeHtml(folder.name) +
+                '</span>' +
                 '</div>';
             });
             html += '</div>';
@@ -82,10 +88,11 @@ var BrowsePage = (function() {
 
         // Render documents
         if (data.documents.length === 0 && currentPage === 1) {
-          var foldersEl = document.getElementById('folders-section');
+          foldersEl = document.getElementById('folders-section');
           var hasFolders = foldersEl && foldersEl.innerHTML.trim() !== '';
           if (!hasFolders) {
-            docsSection.innerHTML = '<div class="empty-state"><p>No documents in this folder.</p></div>';
+            docsSection.innerHTML =
+              '<div class="empty-state"><p>No documents in this folder.</p></div>';
           }
           return;
         }
@@ -97,7 +104,7 @@ var BrowsePage = (function() {
           docsSection.appendChild(grid);
         }
 
-        data.documents.forEach(function(doc) {
+        data.documents.forEach(function (doc) {
           grid.appendChild(DocumentCard.create(doc));
         });
 
@@ -106,20 +113,27 @@ var BrowsePage = (function() {
         if (loadMoreSection) {
           var loaded = currentPage * 50;
           if (loaded < data.total) {
-            loadMoreSection.innerHTML = '<div class="load-more">' +
+            loadMoreSection.innerHTML =
+              '<div class="load-more">' +
               '<button class="btn btn-secondary" id="load-more-btn">Load More (' +
-              loaded + ' / ' + data.total + ')</button></div>';
-            document.getElementById('load-more-btn').addEventListener('click', function() {
-              currentPage++;
-              loadFolder();
-            });
+              loaded +
+              ' / ' +
+              data.total +
+              ')</button></div>';
+            document
+              .getElementById('load-more-btn')
+              .addEventListener('click', function () {
+                currentPage++;
+                loadFolder();
+              });
           } else {
             loadMoreSection.innerHTML = '';
           }
         }
       })
-      .catch(function(err) {
-        docsSection.innerHTML = '<div class="empty-state"><p>Error loading documents.</p></div>';
+      .catch(function (_err) {
+        docsSection.innerHTML =
+          '<div class="empty-state"><p>Error loading documents.</p></div>';
       });
   }
 

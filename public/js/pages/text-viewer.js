@@ -1,8 +1,8 @@
-var TextViewerPage = (function() {
-
+var TextViewerPage = (function () {
   var doc = null;
   var scrollContainer = null;
   var settingsPanel = null;
+  var progressBar = null;
   var saveTimer = null;
   var settingsPanelVisible = false;
 
@@ -12,45 +12,54 @@ var TextViewerPage = (function() {
   var txtMargin = 16;
 
   var FONTS = [
-    { label: 'Menlo', value: 'Menlo, Monaco, "Courier New", Courier, monospace' },
+    {
+      label: 'Menlo',
+      value: 'Menlo, Monaco, "Courier New", Courier, monospace',
+    },
     { label: 'Courier New', value: '"Courier New", Courier, monospace' },
-    { label: 'Monaco', value: 'Monaco, "Courier New", Courier, monospace' }
+    { label: 'Monaco', value: 'Monaco, "Courier New", Courier, monospace' },
   ];
 
   var FONT_SIZES = [11, 12, 13, 14, 16, 18, 20];
   var MARGINS = [0, 8, 16, 24, 32, 48, 64];
 
   function render(container, docId) {
-    container.innerHTML = '<div class="viewer"><div class="viewer-loading">Loading...</div></div>';
+    container.innerHTML =
+      '<div class="viewer"><div class="viewer-loading">Loading...</div></div>';
 
     var docPromise = API.getDocument(docId);
     var settingsPromise = API.getSettings();
 
-    Promise.all([docPromise, settingsPromise]).then(function(results) {
-      doc = results[0];
-      var settings = results[1];
+    Promise.all([docPromise, settingsPromise])
+      .then(function (results) {
+        doc = results[0];
+        var settings = results[1];
 
-      if (doc.file_type !== 'txt') {
-        window.location.hash = '#/view/' + docId;
-        return;
-      }
+        if (doc.file_type !== 'txt') {
+          window.location.hash = '#/view/' + docId;
+          return;
+        }
 
-      // Apply stored per-device settings
-      if (settings.txt_font) txtFont = settings.txt_font;
-      if (settings.txt_font_size) txtFontSize = parseInt(settings.txt_font_size, 10);
-      if (settings.txt_margin) txtMargin = parseInt(settings.txt_margin, 10);
+        // Apply stored per-device settings
+        if (settings.txt_font) txtFont = settings.txt_font;
+        if (settings.txt_font_size)
+          txtFontSize = parseInt(settings.txt_font_size, 10);
+        if (settings.txt_margin) txtMargin = parseInt(settings.txt_margin, 10);
 
-      return API.getTextContent(docId);
-    }).then(function(content) {
-      if (content !== undefined) {
-        buildViewer(container, content);
-      }
-    }).catch(function() {
-      container.innerHTML = '<div class="page"><div class="empty-state">' +
-        '<p>Error loading document.</p>' +
-        '<a href="#/" class="btn" style="margin-top:16px">Go Home</a>' +
-        '</div></div>';
-    });
+        return API.getTextContent(docId);
+      })
+      .then(function (content) {
+        if (content !== undefined) {
+          buildViewer(container, content);
+        }
+      })
+      .catch(function () {
+        container.innerHTML =
+          '<div class="page"><div class="empty-state">' +
+          '<p>Error loading document.</p>' +
+          '<a href="#/" class="btn" style="margin-top:16px">Go Home</a>' +
+          '</div></div>';
+      });
   }
 
   function buildViewer(container, content) {
@@ -60,6 +69,9 @@ var TextViewerPage = (function() {
     buildToolbar(viewer);
     buildSettingsPanel(viewer);
     buildScrollContainer(viewer, content);
+
+    progressBar = ProgressBar.create();
+    viewer.appendChild(progressBar.el);
 
     document.addEventListener('keydown', handleKeyboard);
 
@@ -79,7 +91,7 @@ var TextViewerPage = (function() {
     var backBtn = document.createElement('button');
     backBtn.className = 'viewer-back-btn';
     backBtn.textContent = 'Back';
-    backBtn.addEventListener('click', function() {
+    backBtn.addEventListener('click', function () {
       cleanup();
       window.history.back();
     });
@@ -98,7 +110,7 @@ var TextViewerPage = (function() {
     var settingsBtn = document.createElement('button');
     settingsBtn.className = 'viewer-back-btn';
     settingsBtn.textContent = 'Aa';
-    settingsBtn.addEventListener('click', function() {
+    settingsBtn.addEventListener('click', function () {
       toggleSettings();
     });
     right.appendChild(settingsBtn);
@@ -123,14 +135,14 @@ var TextViewerPage = (function() {
     // Font row
     var fontSel = document.createElement('select');
     fontSel.className = 'txt-settings-select';
-    FONTS.forEach(function(f) {
+    FONTS.forEach(function (f) {
       var opt = document.createElement('option');
       opt.value = f.value;
       opt.textContent = f.label;
       if (f.value === txtFont) opt.selected = true;
       fontSel.appendChild(opt);
     });
-    fontSel.addEventListener('change', function() {
+    fontSel.addEventListener('change', function () {
       txtFont = fontSel.value;
       applySettings();
       API.saveSetting('txt_font', txtFont);
@@ -140,14 +152,14 @@ var TextViewerPage = (function() {
     // Font size row
     var sizeSel = document.createElement('select');
     sizeSel.className = 'txt-settings-select';
-    FONT_SIZES.forEach(function(s) {
+    FONT_SIZES.forEach(function (s) {
       var opt = document.createElement('option');
       opt.value = String(s);
       opt.textContent = s + 'px';
       if (s === txtFontSize) opt.selected = true;
       sizeSel.appendChild(opt);
     });
-    sizeSel.addEventListener('change', function() {
+    sizeSel.addEventListener('change', function () {
       txtFontSize = parseInt(sizeSel.value, 10);
       applySettings();
       API.saveSetting('txt_font_size', String(txtFontSize));
@@ -157,14 +169,14 @@ var TextViewerPage = (function() {
     // Margin row
     var marginSel = document.createElement('select');
     marginSel.className = 'txt-settings-select';
-    MARGINS.forEach(function(m) {
+    MARGINS.forEach(function (m) {
       var opt = document.createElement('option');
       opt.value = String(m);
       opt.textContent = m + 'px';
       if (m === txtMargin) opt.selected = true;
       marginSel.appendChild(opt);
     });
-    marginSel.addEventListener('change', function() {
+    marginSel.addEventListener('change', function () {
       txtMargin = parseInt(marginSel.value, 10);
       applySettings();
       API.saveSetting('txt_margin', String(txtMargin));
@@ -196,7 +208,8 @@ var TextViewerPage = (function() {
     scrollContainer.appendChild(pre);
     viewer.appendChild(scrollContainer);
 
-    scrollContainer.addEventListener('scroll', function() {
+    scrollContainer.addEventListener('scroll', function () {
+      if (progressBar) progressBar.update(getScrollPct(), 10000);
       scheduleSave();
     });
   }
@@ -223,9 +236,10 @@ var TextViewerPage = (function() {
     var savedPct = doc.current_page || 0;
     if (savedPct <= 0) return;
 
-    setTimeout(function() {
+    setTimeout(function () {
       if (!scrollContainer) return;
-      var maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+      var maxScroll =
+        scrollContainer.scrollHeight - scrollContainer.clientHeight;
       if (maxScroll > 0) {
         scrollContainer.scrollTop = Math.round((savedPct / 10000) * maxScroll);
       }
@@ -235,16 +249,16 @@ var TextViewerPage = (function() {
   function getScrollPct() {
     if (!scrollContainer) return 0;
     var maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
-    return maxScroll > 0 ? Math.round((scrollContainer.scrollTop / maxScroll) * 10000) : 0;
+    return maxScroll > 0
+      ? Math.round((scrollContainer.scrollTop / maxScroll) * 10000)
+      : 0;
   }
 
   function scheduleSave() {
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(function() {
+    saveTimer = setTimeout(function () {
       if (doc) {
-        API.saveProgress(doc.id, getScrollPct()).catch(function(err) {
-          console.error('Failed to save txt progress:', err);
-        });
+        API.saveProgress(doc.id, getScrollPct()).catch(function () {});
       }
     }, 2000);
   }
@@ -262,12 +276,13 @@ var TextViewerPage = (function() {
     clearTimeout(saveTimer);
 
     if (doc && scrollContainer) {
-      API.saveProgress(doc.id, getScrollPct()).catch(function() {});
+      API.saveProgress(doc.id, getScrollPct()).catch(function () {});
     }
 
     doc = null;
     scrollContainer = null;
     settingsPanel = null;
+    progressBar = null;
     settingsPanelVisible = false;
   }
 

@@ -38,14 +38,18 @@ function generatePdfThumbnail(pdfPath, thumbPath) {
   var escapedPath = shellEscape(pdfPath);
 
   // Render first page at low DPI for thumbnail
-  var cmd = 'pdftoppm -jpeg -jpegopt quality=80 -r 72 -f 1 -l 1 "' +
-    escapedPath + '" "' + tempPrefix + '"';
+  var cmd =
+    'pdftoppm -jpeg -jpegopt quality=80 -r 72 -f 1 -l 1 "' +
+    escapedPath +
+    '" "' +
+    tempPrefix +
+    '"';
 
-  return execAsync(cmd).then(function() {
+  return execAsync(cmd).then(function () {
     // Find generated file
     var dir = path.dirname(tempPrefix);
     var prefix = path.basename(tempPrefix);
-    var files = fs.readdirSync(dir).filter(function(f) {
+    var files = fs.readdirSync(dir).filter(function (f) {
       return f.startsWith(prefix) && f.endsWith('.jpg');
     });
 
@@ -60,7 +64,7 @@ function generatePdfThumbnail(pdfPath, thumbPath) {
       .resize(config.thumbnailWidth)
       .jpeg({ quality: 80 })
       .toFile(thumbPath)
-      .then(function() {
+      .then(function () {
         fs.unlinkSync(generatedFile);
         return thumbPath;
       });
@@ -75,15 +79,18 @@ function generateCbzThumbnail(cbzPath, thumbPath) {
   var escapedPath = shellEscape(cbzPath);
   var tempDir = path.dirname(thumbPath);
 
-  return execAsync('unzip -l "' + escapedPath + '"').then(function(stdout) {
+  return execAsync('unzip -l "' + escapedPath + '"').then(function (stdout) {
     var lines = stdout.split('\n');
     var imageFiles = [];
 
-    lines.forEach(function(line) {
+    lines.forEach(function (line) {
       var match = line.match(/\d+\s+\d{2}-\d{2}-\d{2,4}\s+\d{2}:\d{2}\s+(.+)/);
       if (match) {
         var filename = match[1].trim();
-        if (/\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(filename) && !filename.startsWith('__MACOSX')) {
+        if (
+          /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(filename) &&
+          !filename.startsWith('__MACOSX')
+        ) {
           imageFiles.push(filename);
         }
       }
@@ -97,21 +104,27 @@ function generateCbzThumbnail(cbzPath, thumbPath) {
 
     var firstImage = imageFiles[0];
     var escapedTarget = shellEscape(firstImage);
-    var tempExtracted = path.join(tempDir, 'cbz_temp_' + Date.now() + path.extname(firstImage));
 
-    return execAsync('unzip -o -j "' + escapedPath + '" "' + escapedTarget + '" -d "' + tempDir + '"')
-      .then(function() {
-        var extractedPath = path.join(tempDir, path.basename(firstImage));
+    return execAsync(
+      'unzip -o -j "' +
+        escapedPath +
+        '" "' +
+        escapedTarget +
+        '" -d "' +
+        tempDir +
+        '"'
+    ).then(function () {
+      var extractedPath = path.join(tempDir, path.basename(firstImage));
 
-        return sharp(extractedPath)
-          .resize(config.thumbnailWidth)
-          .jpeg({ quality: 80 })
-          .toFile(thumbPath)
-          .then(function() {
-            fs.unlinkSync(extractedPath);
-            return thumbPath;
-          });
-      });
+      return sharp(extractedPath)
+        .resize(config.thumbnailWidth)
+        .jpeg({ quality: 80 })
+        .toFile(thumbPath)
+        .then(function () {
+          fs.unlinkSync(extractedPath);
+          return thumbPath;
+        });
+    });
   });
 }
 
@@ -123,13 +136,17 @@ function generateCbrThumbnail(cbrPath, thumbPath) {
   var escapedPath = shellEscape(cbrPath);
   var tempDir = path.dirname(thumbPath);
 
-  return execAsync('unrar lb "' + escapedPath + '"').then(function(stdout) {
+  return execAsync('unrar lb "' + escapedPath + '"').then(function (stdout) {
     var lines = stdout.split('\n');
     var imageFiles = [];
 
-    lines.forEach(function(line) {
+    lines.forEach(function (line) {
       var filename = line.trim();
-      if (filename && /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(filename) && filename.indexOf('__MACOSX') === -1) {
+      if (
+        filename &&
+        /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(filename) &&
+        filename.indexOf('__MACOSX') === -1
+      ) {
         imageFiles.push(filename);
       }
     });
@@ -143,25 +160,34 @@ function generateCbrThumbnail(cbrPath, thumbPath) {
     var firstImage = imageFiles[0];
     var escapedTarget = shellEscape(firstImage);
 
-    return execAsync('unrar e -o+ "' + escapedPath + '" "' + escapedTarget + '" "' + tempDir + '/"')
-      .then(function() {
-        var extractedPath = path.join(tempDir, path.basename(firstImage));
+    return execAsync(
+      'unrar e -o+ "' +
+        escapedPath +
+        '" "' +
+        escapedTarget +
+        '" "' +
+        tempDir +
+        '/"'
+    ).then(function () {
+      var extractedPath = path.join(tempDir, path.basename(firstImage));
 
-        return sharp(extractedPath)
-          .resize(config.thumbnailWidth)
-          .jpeg({ quality: 80 })
-          .toFile(thumbPath)
-          .then(function() {
-            fs.unlinkSync(extractedPath);
-            return thumbPath;
-          });
-      });
+      return sharp(extractedPath)
+        .resize(config.thumbnailWidth)
+        .jpeg({ quality: 80 })
+        .toFile(thumbPath)
+        .then(function () {
+          fs.unlinkSync(extractedPath);
+          return thumbPath;
+        });
+    });
   });
 }
 
 function generateBatch(docs) {
   var db = getDb();
-  var updateStmt = db.prepare('UPDATE documents SET thumbnail_generated = 1 WHERE id = ?');
+  var updateStmt = db.prepare(
+    'UPDATE documents SET thumbnail_generated = 1 WHERE id = ?'
+  );
   var done = 0;
   var total = docs.length;
 
@@ -173,26 +199,36 @@ function generateBatch(docs) {
   var batchSize = 5;
 
   for (var i = 0; i < docs.length; i += batchSize) {
-    (function(batch) {
-      chain = chain.then(function() {
-        return Promise.all(batch.map(function(doc) {
-          var thumbPath = path.join(config.thumbnailsPath, doc.id + '.jpg');
+    (function (batch) {
+      chain = chain.then(function () {
+        return Promise.all(
+          batch.map(function (doc) {
+            var thumbPath = path.join(config.thumbnailsPath, doc.id + '.jpg');
 
-          return generateThumbnail(
-            { file_type: doc.type, id: doc.id },
-            doc.fullPath,
-            thumbPath
-          ).then(function() {
-            updateStmt.run(doc.id);
-            done++;
-            if (done % 10 === 0 || done === total) {
-              log.info({ done: done, total: total }, 'Thumbnail generation progress');
-            }
-          }).catch(function(err) {
-            done++;
-            log.error({ file: doc.fullPath, err: { message: err.message } }, 'Thumbnail generation failed');
-          });
-        }));
+            return generateThumbnail(
+              { file_type: doc.type, id: doc.id },
+              doc.fullPath,
+              thumbPath
+            )
+              .then(function () {
+                updateStmt.run(doc.id);
+                done++;
+                if (done % 10 === 0 || done === total) {
+                  log.info(
+                    { done: done, total: total },
+                    'Thumbnail generation progress'
+                  );
+                }
+              })
+              .catch(function (err) {
+                done++;
+                log.error(
+                  { file: doc.fullPath, err: { message: err.message } },
+                  'Thumbnail generation failed'
+                );
+              });
+          })
+        );
       });
     })(docs.slice(i, i + batchSize));
   }

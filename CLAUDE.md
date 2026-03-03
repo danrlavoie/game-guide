@@ -1,9 +1,11 @@
 # Game Guide - AI Agent Instructions
 
 ## Project Overview
-A client-server web app that serves PDF, CBZ, and CBR game manuals/strategy guides to an old iPad 4th gen (iOS 10.3.3, Safari 10) over LAN. Server-side rendering converts pages to JPEG images; the frontend is a vanilla JS single-page app.
+
+A client-server web app that serves PDF, CBZ, CBR, and TXT game manuals/strategy guides to an old iPad 4th gen (iOS 10.3.3, Safari 10) over LAN. Server-side rendering converts pages to JPEG images; the frontend is a vanilla JS single-page app.
 
 ## Key Directories
+
 - `server/` - Node.js + Express backend
   - `server/routes/` - Express route handlers for API endpoints
   - `server/services/` - Core business logic (scanner, renderer, thumbnails)
@@ -17,6 +19,7 @@ A client-server web app that serves PDF, CBZ, and CBR game manuals/strategy guid
 - `data/` - Runtime data (SQLite DB, cached pages, thumbnails) - gitignored
 
 ## Coding Conventions
+
 - **Backend:** Node.js with CommonJS (`require`/`module.exports`)
 - **Frontend:** Vanilla ES6 JavaScript. NO frameworks, NO build step, NO transpilation
 - **ES6 only:** Do NOT use optional chaining (`?.`), nullish coalescing (`??`), `Array.at()`, or any post-ES6 syntax. These are unsupported on Safari 10.
@@ -27,6 +30,7 @@ A client-server web app that serves PDF, CBZ, and CBR game manuals/strategy guid
 - **Logging:** Use Pino via `server/logger.js`. Do NOT use `console.log`, `console.error`, `console.warn`, or `process.stdout.write`. Create child loggers per module: `var log = require('./logger').child({ component: 'name' })`. Use structured key-value metadata: `log.info({ count: 5, file: path }, 'Message')`. Pino writes to stderr; stdout is unused.
 
 ## Safari 10 Compatibility - APIs to AVOID
+
 - Optional chaining (`?.`) and nullish coalescing (`??`)
 - `Array.at()`, `Object.fromEntries()`, `String.replaceAll()`
 - Service Workers, Pointer Events, Intersection Observer
@@ -35,17 +39,20 @@ A client-server web app that serves PDF, CBZ, and CBR game manuals/strategy guid
 - `async`/`await` IS supported (Safari 10.1+)
 
 ## Testing
+
 - **Local dev:** `npm run dev` starts server with `--watch` on port 3000
 - **Docker:** `docker compose up --build` from project root
 - **iPad:** Navigate to `http://<server-ip>:3000` on iPad Safari
 - Verify page rendering, touch navigation, progress persistence, memory stability
 
 ## Database
+
 - SQLite at `data/game-guide.db`
 - Schema defined in `server/db.js`
 - Tables: `documents`, `devices`, `reading_progress`, `device_settings`, `document_settings`
 
 ## Architecture Decisions - Do NOT Change
+
 - Server-side PDF rendering via `pdftoppm` (not PDF.js) - critical for iPad compatibility
 - `<img>` tags for page display (not `<canvas>`) - avoids 5MP canvas limit
 - 3-page preload window in viewer (6 in spread mode) - keeps memory under control

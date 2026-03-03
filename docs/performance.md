@@ -13,6 +13,7 @@ The original pipeline had four sequential phases, all blocking the scan promise:
 ### Phase 1: Walk + Hash + Catalog (synchronous, in transaction)
 
 For every file found on disk:
+
 1. Read the first 64KB of the file and compute a SHA-256 hash
 2. Call `fs.statSync()` to get the file size
 3. Compare the hash against the database to detect changes
@@ -25,6 +26,7 @@ The `statSync()` call was also redundant — it was called inside the transactio
 ### Phase 2: Page Count Extraction (batched, 10 concurrent)
 
 For each new or changed document, an external command was spawned to extract the page count:
+
 - PDFs: `pdfinfo` (grep for "Pages:" line)
 - CBZ: `unzip -l` (count image file entries)
 - CBR: `unrar lb` (count image file entries)
@@ -36,6 +38,7 @@ These ran in batches of 10 via `Promise.all()`, with batches chained sequentiall
 ### Phase 3: Thumbnail Generation (fully sequential)
 
 Each new or changed document had its first page rendered to a thumbnail:
+
 - PDFs: `pdftoppm` at 72 DPI, then `sharp` resize to 200px wide
 - CBZ/CBR: extract first image from archive, then `sharp` resize
 
@@ -84,12 +87,12 @@ Documents appear in the UI immediately after the catalog phase, with `page_count
 
 ## Summary of Impact
 
-| Scenario | V1 | V2 |
-|----------|----|----|
-| Fresh scan (10k files), catalog phase | ~5-10 min (hash all files) | ~30s (stat only, no hashing) |
-| Fresh scan, total with post-processing | ~30 min (blocking) | ~30s visible + background processing |
-| Re-scan, nothing changed | ~5-10 min (re-hash all files) | ~5s (mtime skip, no file I/O) |
-| Re-scan, 1 file changed | ~5-10 min (re-hash all files) | ~5s catalog + hash 1 file |
-| Page count extraction (10k files) | 1,000 sequential rounds of 10 | 200 sequential rounds of 50 |
-| Thumbnail generation (10k files) | Fully sequential | Batches of 5 in parallel |
-| UI availability during scan | Blocked until complete | Available immediately after catalog |
+| Scenario                               | V1                            | V2                                   |
+| -------------------------------------- | ----------------------------- | ------------------------------------ |
+| Fresh scan (10k files), catalog phase  | ~5-10 min (hash all files)    | ~30s (stat only, no hashing)         |
+| Fresh scan, total with post-processing | ~30 min (blocking)            | ~30s visible + background processing |
+| Re-scan, nothing changed               | ~5-10 min (re-hash all files) | ~5s (mtime skip, no file I/O)        |
+| Re-scan, 1 file changed                | ~5-10 min (re-hash all files) | ~5s catalog + hash 1 file            |
+| Page count extraction (10k files)      | 1,000 sequential rounds of 10 | 200 sequential rounds of 50          |
+| Thumbnail generation (10k files)       | Fully sequential              | Batches of 5 in parallel             |
+| UI availability during scan            | Blocked until complete        | Available immediately after catalog  |

@@ -1,5 +1,4 @@
-var ViewerPage = (function() {
-
+var ViewerPage = (function () {
   var doc = null;
   var currentPage = 1;
   var totalPages = 0;
@@ -12,44 +11,54 @@ var ViewerPage = (function() {
   var page1Side = 'left';
 
   function render(container, docId) {
-    container.innerHTML = '<div class="viewer"><div class="viewer-loading">Loading...</div></div>';
+    container.innerHTML =
+      '<div class="viewer"><div class="viewer-loading">Loading...</div></div>';
 
     // Load document, device settings, and document settings in parallel
     Promise.all([
       API.getDocument(docId),
       API.getSettings(),
-      API.getDocumentSettings(docId)
-    ]).then(function(results) {
-      doc = results[0];
-      var deviceSettings = results[1];
-      var docSettings = results[2];
+      API.getDocumentSettings(docId),
+    ])
+      .then(function (results) {
+        doc = results[0];
+        var deviceSettings = results[1];
+        var docSettings = results[2];
 
-      totalPages = doc.page_count;
-      currentPage = doc.current_page || 1;
+        totalPages = doc.page_count;
+        currentPage = doc.current_page || 1;
 
-      // Resolve spread mode: default -> device setting -> document override
-      spreadMode = 'single';
-      if (deviceSettings.spread_mode === 'spread') {
-        spreadMode = 'spread';
-      }
-      if (docSettings.spread_mode === 'single' || docSettings.spread_mode === 'spread') {
-        spreadMode = docSettings.spread_mode;
-      }
+        // Resolve spread mode: default -> device setting -> document override
+        spreadMode = 'single';
+        if (deviceSettings.spread_mode === 'spread') {
+          spreadMode = 'spread';
+        }
+        if (
+          docSettings.spread_mode === 'single' ||
+          docSettings.spread_mode === 'spread'
+        ) {
+          spreadMode = docSettings.spread_mode;
+        }
 
-      // Resolve page1Side: default -> document setting
-      page1Side = 'left';
-      if (docSettings.page1_side === 'left' || docSettings.page1_side === 'right') {
-        page1Side = docSettings.page1_side;
-      }
+        // Resolve page1Side: default -> document setting
+        page1Side = 'left';
+        if (
+          docSettings.page1_side === 'left' ||
+          docSettings.page1_side === 'right'
+        ) {
+          page1Side = docSettings.page1_side;
+        }
 
-      buildViewer(container);
-      showPage(currentPage);
-    }).catch(function(err) {
-      container.innerHTML = '<div class="page"><div class="empty-state">' +
-        '<p>Error loading document.</p>' +
-        '<a href="#/" class="btn" style="margin-top:16px">Go Home</a>' +
-        '</div></div>';
-    });
+        buildViewer(container);
+        showPage(currentPage);
+      })
+      .catch(function (_err) {
+        container.innerHTML =
+          '<div class="page"><div class="empty-state">' +
+          '<p>Error loading document.</p>' +
+          '<a href="#/" class="btn" style="margin-top:16px">Go Home</a>' +
+          '</div></div>';
+      });
   }
 
   function buildViewer(container) {
@@ -63,27 +72,31 @@ var ViewerPage = (function() {
       downloadUrl: API.getDownloadUrl(doc.id),
       spreadMode: spreadMode,
       page1Side: page1Side,
-      onBack: function() {
+      onBack: function () {
         cleanup();
         window.history.back();
       },
-      onPageChange: function(page) {
+      onPageChange: function (page) {
         goToPage(page);
       },
-      onSpreadToggle: function() {
+      onSpreadToggle: function () {
         spreadMode = spreadMode === 'single' ? 'spread' : 'single';
         toolbar.setSpreadMode(spreadMode);
         updateContainerClass();
         // Save as document-level override
-        API.saveDocumentSetting(doc.id, 'spread_mode', spreadMode).catch(function() {});
+        API.saveDocumentSetting(doc.id, 'spread_mode', spreadMode).catch(
+          function () {}
+        );
         // Re-display current page with new mode
         showPage(currentPage);
       },
-      onAlignToggle: function() {
+      onAlignToggle: function () {
         page1Side = page1Side === 'left' ? 'right' : 'left';
         toolbar.setPage1Side(page1Side);
         // Save as document-level setting
-        API.saveDocumentSetting(doc.id, 'page1_side', page1Side).catch(function() {});
+        API.saveDocumentSetting(doc.id, 'page1_side', page1Side).catch(
+          function () {}
+        );
         // Re-display current page with new alignment
         showPage(currentPage);
       },
@@ -98,11 +111,21 @@ var ViewerPage = (function() {
 
     // Touch handling
     TouchHandler.create(pageContainer, {
-      onTapLeft: function() { prevPage(); },
-      onTapRight: function() { nextPage(); },
-      onTapCenter: function() { toolbar.toggle(); },
-      onSwipeLeft: function() { nextPage(); },
-      onSwipeRight: function() { prevPage(); },
+      onTapLeft: function () {
+        prevPage();
+      },
+      onTapRight: function () {
+        nextPage();
+      },
+      onTapCenter: function () {
+        toolbar.toggle();
+      },
+      onSwipeLeft: function () {
+        nextPage();
+      },
+      onSwipeRight: function () {
+        prevPage();
+      },
     });
 
     // Progress bar
@@ -128,15 +151,16 @@ var ViewerPage = (function() {
   function getSpreadPages(pageNum) {
     if (spreadMode === 'single') return [pageNum];
 
+    var leftPage, rightPage;
     if (page1Side === 'left') {
       // Pages pair as: [1,2], [3,4], [5,6]...
-      var leftPage = (pageNum % 2 === 1) ? pageNum : pageNum - 1;
-      var rightPage = leftPage + 1;
+      leftPage = pageNum % 2 === 1 ? pageNum : pageNum - 1;
+      rightPage = leftPage + 1;
     } else {
       // Page 1 on right: [null,1], [2,3], [4,5]...
       if (pageNum === 1) return [null, 1];
-      var leftPage = (pageNum % 2 === 0) ? pageNum : pageNum - 1;
-      var rightPage = leftPage + 1;
+      leftPage = pageNum % 2 === 0 ? pageNum : pageNum - 1;
+      rightPage = leftPage + 1;
     }
 
     if (rightPage > totalPages) return [leftPage, null];
@@ -171,14 +195,15 @@ var ViewerPage = (function() {
       var img = getImage(currentPage);
       img.className = 'viewer-page-img';
       var loadPage = currentPage;
-      img.onload = function() {
+      img.onload = function () {
         if (currentPage !== loadPage) return;
         pageContainer.innerHTML = '';
         pageContainer.appendChild(img);
       };
-      img.onerror = function() {
+      img.onerror = function () {
         if (currentPage !== loadPage) return;
-        pageContainer.innerHTML = '<div class="viewer-loading">Error loading page</div>';
+        pageContainer.innerHTML =
+          '<div class="viewer-loading">Error loading page</div>';
       };
       if (img.complete && img.naturalWidth) {
         pageContainer.innerHTML = '';
@@ -209,14 +234,14 @@ var ViewerPage = (function() {
       if (leftPage) {
         var leftImg = getImage(leftPage);
         leftImg.className = 'viewer-page-img';
-        leftImg.onload = function() {
+        leftImg.onload = function () {
           if (currentPage !== loadTarget) return;
           leftSlot.innerHTML = '';
           leftSlot.appendChild(leftImg);
           loaded.left = true;
           tryFinish();
         };
-        leftImg.onerror = function() {
+        leftImg.onerror = function () {
           loaded.left = true;
           tryFinish();
         };
@@ -229,14 +254,14 @@ var ViewerPage = (function() {
       if (rightPage) {
         var rightImg = getImage(rightPage);
         rightImg.className = 'viewer-page-img';
-        rightImg.onload = function() {
+        rightImg.onload = function () {
           if (currentPage !== loadTarget) return;
           rightSlot.innerHTML = '';
           rightSlot.appendChild(rightImg);
           loaded.right = true;
           tryFinish();
         };
-        rightImg.onerror = function() {
+        rightImg.onerror = function () {
           loaded.right = true;
           tryFinish();
         };
@@ -293,29 +318,38 @@ var ViewerPage = (function() {
       var nextStart = (currentPair[1] || currentPair[0]) + 1;
 
       // Current pair
-      currentPair.forEach(function(p) {
-        if (p && p >= 1 && p <= totalPages) { keep[p] = true; getImage(p); }
+      currentPair.forEach(function (p) {
+        if (p && p >= 1 && p <= totalPages) {
+          keep[p] = true;
+          getImage(p);
+        }
       });
 
       // Previous pair
       if (prevStart >= 1) {
         var prevPair = getSpreadPages(prevStart);
-        prevPair.forEach(function(p) {
-          if (p && p >= 1 && p <= totalPages) { keep[p] = true; getImage(p); }
+        prevPair.forEach(function (p) {
+          if (p && p >= 1 && p <= totalPages) {
+            keep[p] = true;
+            getImage(p);
+          }
         });
       }
 
       // Next pair
       if (nextStart <= totalPages) {
         var nextPair = getSpreadPages(nextStart);
-        nextPair.forEach(function(p) {
-          if (p && p >= 1 && p <= totalPages) { keep[p] = true; getImage(p); }
+        nextPair.forEach(function (p) {
+          if (p && p >= 1 && p <= totalPages) {
+            keep[p] = true;
+            getImage(p);
+          }
         });
       }
     }
 
     // Evict pages outside the window
-    Object.keys(preloadedImages).forEach(function(key) {
+    Object.keys(preloadedImages).forEach(function (key) {
       var num = parseInt(key, 10);
       if (!keep[num]) {
         delete preloadedImages[num];
@@ -347,9 +381,9 @@ var ViewerPage = (function() {
 
   function scheduleSave() {
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(function() {
+    saveTimer = setTimeout(function () {
       if (doc) {
-        API.saveProgress(doc.id, currentPage).catch(function() {});
+        API.saveProgress(doc.id, currentPage).catch(function () {});
       }
     }, 2000);
   }
@@ -373,7 +407,7 @@ var ViewerPage = (function() {
 
     // Save progress immediately on exit
     if (doc) {
-      API.saveProgress(doc.id, currentPage).catch(function() {});
+      API.saveProgress(doc.id, currentPage).catch(function () {});
     }
 
     doc = null;

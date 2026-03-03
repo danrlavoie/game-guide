@@ -11,7 +11,7 @@
   --accent-color: #3498db;
   --accent-hover: #2980b9;
   --card-bg: #ffffff;
-  --card-shadow: rgba(0,0,0,0.1);
+  --card-shadow: rgba(0, 0, 0, 0.1);
   --input-bg: #ffffff;
   --input-border: #ddd;
   --progress-bg: #e0e0e0;
@@ -20,7 +20,7 @@
   --thumb-bg: #e8e8e8;
 }
 
-[data-theme="dark"] {
+[data-theme='dark'] {
   --bg-primary: #1a1a2e;
   --bg-secondary: #16213e;
   --bg-tertiary: #0f3460;
@@ -33,7 +33,7 @@
   --accent-color: #4fc3f7;
   --accent-hover: #29b6f6;
   --card-bg: #16213e;
-  --card-shadow: rgba(0,0,0,0.3);
+  --card-shadow: rgba(0, 0, 0, 0.3);
   --input-bg: #1a1a2e;
   --input-border: #2a2a4a;
   --progress-bg: #2a2a4a;
@@ -42,20 +42,25 @@
   --thumb-bg: #2a2a4a;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial,
+    sans-serif;
   line-height: 1.5;
   color: var(--text-primary);
   background: var(--bg-primary);
@@ -72,13 +77,15 @@ a {
   text-decoration: none;
 }
 
-button, input {
+button,
+input {
   font: inherit;
   border: none;
   outline: none;
   background: none;
 }
 
-ul, ol {
+ul,
+ol {
   list-style: none;
 }

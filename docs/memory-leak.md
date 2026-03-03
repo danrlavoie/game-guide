@@ -11,6 +11,7 @@ The `sharp` image processing library maintains an internal decoded image cache b
 In our thumbnail pipeline, every operation is on a different source file — we extract the first image from an archive, resize it to a 200px-wide JPEG, and move on. The cache was storing decoded pixel data from already-completed thumbnails that would never be reused. Over thousands of thumbnails, this accumulated into hundreds of megabytes of retained memory.
 
 The batch runs 5 thumbnails in parallel, each involving:
+
 1. Spawning an external process (`unrar`/`unzip`) to extract an image from an archive over SMB
 2. Decoding the extracted image into raw pixels via sharp/libvips
 3. Resizing and encoding to JPEG
@@ -46,6 +47,7 @@ OOM kills are silent — no stack trace, no error event, no unhandled rejection.
 - `dmesg` or system logs show an OOM kill for the Node process
 
 If a similar issue recurs, check:
+
 1. Whether any library is caching decoded data between independent operations
 2. Whether batch concurrency is too high (our thumbnail batch size of 5 is conservative, but over SMB each operation holds buffers longer)
 3. Whether `process.memoryUsage()` logging during batches shows a monotonic increase in `rss` or `heapUsed`

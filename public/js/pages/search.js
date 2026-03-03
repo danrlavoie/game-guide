@@ -1,26 +1,26 @@
-var SearchPage = (function() {
-
+var SearchPage = (function () {
   var debounceTimer = null;
 
   function render(container, query) {
     container.innerHTML =
       '<div class="header">' +
-        '<a href="#/" class="header-back">Home</a>' +
-        '<h1>Search</h1>' +
-        '<span></span>' +
+      '<a href="#/" class="header-back">Home</a>' +
+      '<h1>Search</h1>' +
+      '<span></span>' +
       '</div>' +
       '<div class="search-bar">' +
-        '<input type="search" id="search-input" placeholder="Search documents..." value="' +
-        escapeHtml(query || '') + '">' +
+      '<input type="search" id="search-input" placeholder="Search documents..." value="' +
+      escapeHtml(query || '') +
+      '">' +
       '</div>' +
       '<div class="page">' +
-        '<div id="search-results"></div>' +
+      '<div id="search-results"></div>' +
       '</div>';
 
     var input = document.getElementById('search-input');
-    input.addEventListener('input', function() {
+    input.addEventListener('input', function () {
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(function() {
+      debounceTimer = setTimeout(function () {
         var q = input.value.trim();
         if (q.length >= 2) {
           performSearch(q);
@@ -47,27 +47,36 @@ var SearchPage = (function() {
 
     resultsEl.innerHTML = '<div class="loading">Searching...</div>';
 
-    API.search(query).then(function(data) {
-      if (data.documents.length === 0) {
-        resultsEl.innerHTML = '<div class="empty-state"><p>No results for "' +
-          escapeHtml(query) + '"</p></div>';
-        return;
-      }
+    API.search(query)
+      .then(function (data) {
+        if (data.documents.length === 0) {
+          resultsEl.innerHTML =
+            '<div class="empty-state"><p>No results for "' +
+            escapeHtml(query) +
+            '"</p></div>';
+          return;
+        }
 
-      resultsEl.innerHTML = '<h2 class="section-title">' + data.documents.length +
-        ' result' + (data.documents.length !== 1 ? 's' : '') + '</h2>';
+        resultsEl.innerHTML =
+          '<h2 class="section-title">' +
+          data.documents.length +
+          ' result' +
+          (data.documents.length !== 1 ? 's' : '') +
+          '</h2>';
 
-      var grid = document.createElement('div');
-      grid.className = 'doc-grid';
+        var grid = document.createElement('div');
+        grid.className = 'doc-grid';
 
-      data.documents.forEach(function(doc) {
-        grid.appendChild(DocumentCard.create(doc));
+        data.documents.forEach(function (doc) {
+          grid.appendChild(DocumentCard.create(doc));
+        });
+
+        resultsEl.appendChild(grid);
+      })
+      .catch(function (_err) {
+        resultsEl.innerHTML =
+          '<div class="empty-state"><p>Search error.</p></div>';
       });
-
-      resultsEl.appendChild(grid);
-    }).catch(function(err) {
-      resultsEl.innerHTML = '<div class="empty-state"><p>Search error.</p></div>';
-    });
   }
 
   function escapeHtml(str) {

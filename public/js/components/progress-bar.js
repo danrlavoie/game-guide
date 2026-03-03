@@ -1,5 +1,4 @@
-var ProgressBar = (function() {
-
+var ProgressBar = (function () {
   function create() {
     var el = document.createElement('div');
     el.className = 'viewer-progress';
@@ -11,7 +10,7 @@ var ProgressBar = (function() {
 
     return {
       el: el,
-      update: function(current, total) {
+      update: function (current, total) {
         var pct = total > 0 ? Math.round((current / total) * 100) : 0;
         bar.style.width = pct + '%';
       },

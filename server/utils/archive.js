@@ -10,8 +10,8 @@ function isZipFile(filePath) {
     var buf = Buffer.alloc(2);
     fs.readSync(fd, buf, 0, 2, 0);
     fs.closeSync(fd);
-    return buf[0] === 0x50 && buf[1] === 0x4B;
-  } catch (err) {
+    return buf[0] === 0x50 && buf[1] === 0x4b;
+  } catch (_err) {
     return false;
   }
 }
@@ -26,8 +26,10 @@ function isRarFile(filePath) {
     var buf = Buffer.alloc(4);
     fs.readSync(fd, buf, 0, 4, 0);
     fs.closeSync(fd);
-    return buf[0] === 0x52 && buf[1] === 0x61 && buf[2] === 0x72 && buf[3] === 0x21;
-  } catch (err) {
+    return (
+      buf[0] === 0x52 && buf[1] === 0x61 && buf[2] === 0x72 && buf[3] === 0x21
+    );
+  } catch (_err) {
     return false;
   }
 }

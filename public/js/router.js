@@ -1,5 +1,4 @@
-var Router = (function() {
-
+var Router = (function () {
   var app = document.getElementById('app');
   var currentCleanup = null;
 

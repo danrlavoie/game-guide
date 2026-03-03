@@ -1,4 +1,4 @@
 // Initialize the application
-(function() {
+(function () {
   Router.init();
 })();

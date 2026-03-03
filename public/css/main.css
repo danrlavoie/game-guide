@@ -48,7 +48,7 @@
 .header-back {
   font-size: 14px;
   padding: 4px 8px;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 4px;
 }
 
@@ -215,12 +215,12 @@
 .scan-btn {
   font-size: 13px;
   padding: 4px 12px;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 4px;
   cursor: pointer;
   color: var(--header-text);
 }
 
 .scan-btn:active {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
 }

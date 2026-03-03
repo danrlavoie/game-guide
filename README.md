@@ -5,6 +5,7 @@ A PDF/CBZ/CBR reader web app designed for reading game manuals and strategy guid
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 20+
 - `poppler-utils` installed (`pdftoppm`, `pdfinfo`)
 - `unrar` installed (for CBR support)
@@ -39,39 +40,39 @@ Add the container through the UnRAID Docker UI with the following mappings:
 
 **Ports:**
 
-| Name | Container Port | Host Port |
-|------|---------------|-----------|
-| Web UI | `3000` | `3000` (or your choice) |
+| Name   | Container Port | Host Port               |
+| ------ | -------------- | ----------------------- |
+| Web UI | `3000`         | `3000` (or your choice) |
 
 **Paths:**
 
-| Name | Container Path | Host Path | Mode |
-|------|---------------|-----------|------|
-| Documents | `/documents` | `/mnt/user/Game books magazines manuals` | Read Only |
-| Data | `/data` | `/mnt/user/appdata/game-guide/data` | Read/Write |
+| Name      | Container Path | Host Path                                | Mode       |
+| --------- | -------------- | ---------------------------------------- | ---------- |
+| Documents | `/documents`   | `/mnt/user/Game books magazines manuals` | Read Only  |
+| Data      | `/data`        | `/mnt/user/appdata/game-guide/data`      | Read/Write |
 
 **Variables (optional):**
 
-| Name | Default | Description |
-|------|---------|-------------|
-| `PAGE_DPI` | `150` | DPI for rendered page JPEGs (higher = sharper, larger files) |
-| `THUMBNAIL_WIDTH` | `200` | Thumbnail width in pixels |
-| `PAGE_QUALITY` | `85` | JPEG quality for rendered pages (1-100) |
-| `SCAN_INTERVAL` | `0` | Auto-rescan interval in minutes (0 = manual only) |
+| Name              | Default | Description                                                  |
+| ----------------- | ------- | ------------------------------------------------------------ |
+| `PAGE_DPI`        | `150`   | DPI for rendered page JPEGs (higher = sharper, larger files) |
+| `THUMBNAIL_WIDTH` | `200`   | Thumbnail width in pixels                                    |
+| `PAGE_QUALITY`    | `85`    | JPEG quality for rendered pages (1-100)                      |
+| `SCAN_INTERVAL`   | `0`     | Auto-rescan interval in minutes (0 = manual only)            |
 
 ## Configuration
 
 All configuration is via environment variables. In Docker, these are set through `docker-compose.yml` or the UnRAID Docker UI. For local development, pass them on the command line.
 
-| Variable | Default (Docker) | Default (Local) | Description |
-|----------|-----------------|-----------------|-------------|
-| `HOST_PORT` | `3000` | n/a | Host port mapped to container port 3000 |
-| `DOCUMENTS_PATH` | `/mnt/user/Game books magazines manuals` | `/documents` | Path to document directory |
-| `DATA_PATH` | `/mnt/user/appdata/game-guide/data` | `./data` | Path for SQLite DB, page cache, thumbnails |
-| `PAGE_DPI` | `150` | `150` | DPI for PDF page rendering |
-| `THUMBNAIL_WIDTH` | `200` | `200` | Thumbnail width in pixels |
-| `PAGE_QUALITY` | `85` | `85` | JPEG quality for rendered pages |
-| `SCAN_INTERVAL` | `0` | `0` | Auto-rescan interval in minutes (0 = manual only) |
+| Variable          | Default (Docker)                         | Default (Local) | Description                                       |
+| ----------------- | ---------------------------------------- | --------------- | ------------------------------------------------- |
+| `HOST_PORT`       | `3000`                                   | n/a             | Host port mapped to container port 3000           |
+| `DOCUMENTS_PATH`  | `/mnt/user/Game books magazines manuals` | `/documents`    | Path to document directory                        |
+| `DATA_PATH`       | `/mnt/user/appdata/game-guide/data`      | `./data`        | Path for SQLite DB, page cache, thumbnails        |
+| `PAGE_DPI`        | `150`                                    | `150`           | DPI for PDF page rendering                        |
+| `THUMBNAIL_WIDTH` | `200`                                    | `200`           | Thumbnail width in pixels                         |
+| `PAGE_QUALITY`    | `85`                                     | `85`            | JPEG quality for rendered pages                   |
+| `SCAN_INTERVAL`   | `0`                                      | `0`             | Auto-rescan interval in minutes (0 = manual only) |
 
 ## Project Structure
 

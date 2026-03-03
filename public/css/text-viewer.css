@@ -27,7 +27,7 @@
   right: 0;
   z-index: 109;
   padding: 8px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .txt-settings-row {
@@ -38,7 +38,7 @@
   -webkit-justify-content: space-between;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .txt-settings-row:last-child {
@@ -51,9 +51,9 @@
 }
 
 .txt-settings-select {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   color: white;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   padding: 4px 8px;
   font-size: 14px;
