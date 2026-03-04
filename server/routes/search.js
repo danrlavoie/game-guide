@@ -55,6 +55,22 @@ router.get('/', function (req, res) {
       doc.last_read = p ? p.last_read_at : null;
       return doc;
     });
+
+    // Attach is_favorite
+    var favStmt = db.prepare(
+      'SELECT document_id FROM favorites WHERE device_id = ? AND document_id IN (' +
+        placeholders +
+        ')'
+    );
+    var favRows = favStmt.all.apply(favStmt, [req.deviceId].concat(docIds));
+    var favSet = {};
+    favRows.forEach(function (r) {
+      favSet[r.document_id] = true;
+    });
+    documents = documents.map(function (doc) {
+      doc.is_favorite = !!favSet[doc.id];
+      return doc;
+    });
   }
 
   res.json({ documents: documents, query: q });

@@ -9,6 +9,7 @@ var ViewerPage = (function () {
   var preloadedImages = {};
   var spreadMode = 'single';
   var page1Side = 'left';
+  var isFavorited = false;
   var bookmarks = [];
   var bookmarkPanel = null;
 
@@ -31,6 +32,7 @@ var ViewerPage = (function () {
 
         totalPages = doc.page_count;
         currentPage = doc.current_page || 1;
+        isFavorited = !!doc.is_favorite;
 
         // Resolve spread mode: default -> device setting -> document override
         spreadMode = 'single';
@@ -76,6 +78,7 @@ var ViewerPage = (function () {
       downloadUrl: API.getDownloadUrl(doc.id),
       spreadMode: spreadMode,
       page1Side: page1Side,
+      isFavorited: isFavorited,
       onBack: function () {
         cleanup();
         window.history.back();
@@ -103,6 +106,9 @@ var ViewerPage = (function () {
         );
         // Re-display current page with new alignment
         showPage(currentPage);
+      },
+      onFavoriteToggle: function () {
+        toggleFavorite();
       },
       onBookmarkToggle: function () {
         toggleBookmark();
@@ -477,6 +483,18 @@ var ViewerPage = (function () {
     }
   }
 
+  function toggleFavorite() {
+    var promise = isFavorited
+      ? API.removeFavorite(doc.id)
+      : API.addFavorite(doc.id);
+    promise
+      .then(function () {
+        isFavorited = !isFavorited;
+        toolbar.setFavorited(isFavorited);
+      })
+      .catch(function () {});
+  }
+
   function handleKeyboard(e) {
     if (e.target.tagName === 'INPUT') return;
 
@@ -506,6 +524,7 @@ var ViewerPage = (function () {
     pageContainer = null;
     spreadMode = 'single';
     page1Side = 'left';
+    isFavorited = false;
     bookmarks = [];
     bookmarkPanel = null;
   }

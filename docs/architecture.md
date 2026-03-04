@@ -193,6 +193,17 @@ Per-document settings allow overriding device-level defaults for individual book
 
 Bookmarks are per-device, per-document. One bookmark per page per device. The document list API attaches `bookmark_count` for the current device to each document.
 
+### favorites
+
+| Column      | Type    | Description                      |
+| ----------- | ------- | -------------------------------- |
+| device_id   | TEXT    | FK to devices                    |
+| document_id | INTEGER | FK to documents (CASCADE delete) |
+| created_at  | TEXT    | ISO timestamp                    |
+| PRIMARY KEY |         | (device_id, document_id)         |
+
+Favorites are per-device. The document list, detail, search, and recent APIs attach `is_favorite` boolean for the current device. The favorites list API returns all favorited documents with reading progress and bookmark counts.
+
 ## API Endpoints
 
 | Method  | Path                                       | Purpose                                                       |
@@ -214,4 +225,7 @@ Bookmarks are per-device, per-document. One bookmark per page per device. The do
 | PUT     | `/api/documents/:id/settings`              | Upsert a document setting (`{ key, value }`)                  |
 | GET     | `/api/settings`                            | Get all settings for current device                           |
 | PUT     | `/api/settings`                            | Upsert a setting (`{ key, value }`)                           |
+| GET     | `/api/favorites`                           | List all favorites for current device                         |
+| POST    | `/api/documents/:id/favorite`              | Add document to favorites                                     |
+| DELETE  | `/api/documents/:id/favorite`              | Remove document from favorites                                |
 | POST    | `/api/scan`                                | Trigger directory re-scan                                     |

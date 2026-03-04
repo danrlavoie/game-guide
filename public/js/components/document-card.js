@@ -23,6 +23,13 @@ var DocumentCard = (function () {
       'onerror="this.parentNode.innerHTML=\'<span class=placeholder>' +
       doc.file_type.toUpperCase() +
       '</span>\'">' +
+      '<button class="doc-card-favorite-btn' +
+      (doc.is_favorite ? ' active' : '') +
+      '" data-doc-id="' +
+      doc.id +
+      '">' +
+      (doc.is_favorite ? '\u2665' : '\u2661') +
+      '</button>' +
       bookmarkBadge +
       '</div>';
 
@@ -73,6 +80,28 @@ var DocumentCard = (function () {
       window.location.hash =
         doc.file_type === 'txt' ? '#/read/' + doc.id : '#/view/' + doc.id;
     });
+
+    var favBtn = card.querySelector('.doc-card-favorite-btn');
+    if (favBtn) {
+      favBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var isActive = favBtn.classList.contains('active');
+        var promise = isActive
+          ? API.removeFavorite(doc.id)
+          : API.addFavorite(doc.id);
+        promise
+          .then(function () {
+            if (isActive) {
+              favBtn.classList.remove('active');
+              favBtn.textContent = '\u2661';
+            } else {
+              favBtn.classList.add('active');
+              favBtn.textContent = '\u2665';
+            }
+          })
+          .catch(function () {});
+      });
+    }
 
     return card;
   }

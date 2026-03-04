@@ -18,6 +18,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // API routes
 app.use('/api/documents', require('./routes/documents'));
+app.use('/api/favorites', require('./routes/favorites'));
 app.use('/api/search', require('./routes/search'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api', require('./routes/scan'));

@@ -13,6 +13,7 @@ var HomePage = (function () {
       '</div>' +
       '<div class="page">' +
       '<div id="recent-section"></div>' +
+      '<div id="favorites-section"></div>' +
       '<div style="margin-top: 24px; text-align: center;">' +
       '<a href="#/browse/" class="btn btn-block">Browse Library</a>' +
       '</div>' +
@@ -42,6 +43,7 @@ var HomePage = (function () {
             btn.disabled = false;
           }, 2000);
           loadRecent();
+          loadFavorites();
         })
         .catch(function (_err) {
           btn.textContent = 'Error';
@@ -53,6 +55,7 @@ var HomePage = (function () {
     });
 
     loadRecent();
+    loadFavorites();
   }
 
   function loadRecent() {
@@ -82,6 +85,33 @@ var HomePage = (function () {
       .catch(function (_err) {
         section.innerHTML =
           '<div class="empty-state"><p>Could not load recent documents.</p></div>';
+      });
+  }
+
+  function loadFavorites() {
+    var section = document.getElementById('favorites-section');
+    if (!section) return;
+
+    API.getFavorites()
+      .then(function (data) {
+        if (!data.documents || data.documents.length === 0) {
+          section.innerHTML = '';
+          return;
+        }
+
+        section.innerHTML = '<h2 class="section-title">Favorites</h2>';
+
+        var scrollContainer = document.createElement('div');
+        scrollContainer.className = 'recent-docs';
+
+        data.documents.forEach(function (doc) {
+          scrollContainer.appendChild(DocumentCard.create(doc));
+        });
+
+        section.appendChild(scrollContainer);
+      })
+      .catch(function () {
+        section.innerHTML = '';
       });
   }
 

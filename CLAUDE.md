@@ -49,7 +49,7 @@ A client-server web app that serves PDF, CBZ, CBR, and TXT game manuals/strategy
 
 - SQLite at `data/game-guide.db`
 - Schema defined in `server/db.js`
-- Tables: `documents`, `devices`, `reading_progress`, `device_settings`, `document_settings`, `bookmarks`
+- Tables: `documents`, `devices`, `reading_progress`, `device_settings`, `document_settings`, `bookmarks`, `favorites`
 
 ## Architecture Decisions - Do NOT Change
 

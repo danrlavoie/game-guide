@@ -74,6 +74,20 @@ var Toolbar = (function () {
     });
     right.appendChild(alignBtn);
 
+    // Favorite toggle button (heart)
+    var favoriteBtn = document.createElement('button');
+    favoriteBtn.className = 'viewer-favorite-btn';
+    favoriteBtn.textContent = '\u2661';
+    favoriteBtn.title = 'Favorite this document';
+    if (options.isFavorited) {
+      favoriteBtn.textContent = '\u2665';
+      favoriteBtn.classList.add('active');
+    }
+    favoriteBtn.addEventListener('click', function () {
+      if (options.onFavoriteToggle) options.onFavoriteToggle();
+    });
+    right.appendChild(favoriteBtn);
+
     // Bookmark toggle button (star)
     var bookmarkBtn = document.createElement('button');
     bookmarkBtn.className = 'viewer-bookmark-btn';
@@ -151,6 +165,14 @@ var Toolbar = (function () {
       },
       setPage1Side: function (side) {
         updateAlignBtn(alignBtn, side);
+      },
+      setFavorited: function (isFavorited) {
+        favoriteBtn.textContent = isFavorited ? '\u2665' : '\u2661';
+        if (isFavorited) {
+          favoriteBtn.classList.add('active');
+        } else {
+          favoriteBtn.classList.remove('active');
+        }
       },
       setBookmarked: function (isBookmarked) {
         bookmarkBtn.textContent = isBookmarked ? '\u2605' : '\u2606';

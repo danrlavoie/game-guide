@@ -91,4 +91,32 @@ describe('API module', function () {
       '/api/documents/42/download'
     );
   });
+
+  it('has getBookmarks method', function () {
+    expect(typeof globalThis.API.getBookmarks).toBe('function');
+  });
+
+  it('has addBookmark method', function () {
+    expect(typeof globalThis.API.addBookmark).toBe('function');
+  });
+
+  it('has updateBookmark method', function () {
+    expect(typeof globalThis.API.updateBookmark).toBe('function');
+  });
+
+  it('has deleteBookmark method', function () {
+    expect(typeof globalThis.API.deleteBookmark).toBe('function');
+  });
+
+  it('has getFavorites method', function () {
+    expect(typeof globalThis.API.getFavorites).toBe('function');
+  });
+
+  it('has addFavorite method', function () {
+    expect(typeof globalThis.API.addFavorite).toBe('function');
+  });
+
+  it('has removeFavorite method', function () {
+    expect(typeof globalThis.API.removeFavorite).toBe('function');
+  });
 });

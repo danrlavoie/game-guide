@@ -227,6 +227,28 @@
   transition: width 0.3s;
 }
 
+/* Favorite button */
+.viewer-favorite-btn {
+  color: white;
+  font-size: 16px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 6px;
+  border: none;
+  line-height: 1;
+}
+
+.viewer-favorite-btn:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.viewer-favorite-btn.active {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.2);
+}
+
 /* Bookmark buttons */
 .viewer-bookmark-btn,
 .viewer-bookmarks-list-btn {

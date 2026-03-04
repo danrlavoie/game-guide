@@ -25,7 +25,7 @@
 - Server-rendered page images (JPEG, 150 DPI)
 - Touch navigation: tap right = next, tap left = prev, tap center = toggle toolbar
 - Swipe left/right for page turning
-- Toolbar with: back button, page indicator, page jump input, spread toggle, alignment toggle, bookmark toggle, bookmarks list, download button
+- Toolbar with: back button, page indicator, page jump input, spread toggle, alignment toggle, favorite toggle, bookmark toggle, bookmarks list, download button
 - Progress bar at bottom of screen
 - Single-page mode: 3-page preload window (previous, current, next)
 - Two-page spread mode: side-by-side display, 6-page preload window (3 pairs)
@@ -39,6 +39,16 @@
 - Auto-save current page position (debounced, every 2 seconds)
 - Resume reading from last position
 - Per-device tracking (cookie-based, no login)
+
+### Favorites
+
+- Favorite entire documents for quick access from homepage
+- Heart icon (♡/♥) on document cards (browse, search, recent, favorites) toggles favorite
+- Heart button in viewer toolbar toggles favorite for current document
+- Favorites carousel on homepage between Recently Viewed and Browse Library
+- Scrollable horizontal carousel showing all favorites, sorted by most recently favorited
+- No limit on number of favorites
+- Favorites are per-device (scoped by device cookie, no login)
 
 ### Page Bookmarks
 
@@ -93,8 +103,7 @@
 
 ## Future Features
 
-- Favorites
-  - Both being able to favorite a particular book, surfacing it in a new special carousel or grid or list alongside the recent books.
+- ~~Favorites~~ (implemented — heart toggle on document cards and viewer toolbar, favorites carousel on homepage, per-device scoping)
 - ~~Bookmarking~~ (implemented — star toggle in viewer toolbar, dropdown panel with labeled bookmarks, jump navigation respecting spread mode, inline label editing, delete support, gold star badge on browse page cards)
 - Notes and annotations
 - Chapter navigation (PDF table of contents)

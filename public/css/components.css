@@ -40,6 +40,32 @@
   color: var(--placeholder-color);
 }
 
+.doc-card-favorite-btn {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 16px;
+  line-height: 28px;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 2;
+}
+
+.doc-card-favorite-btn:active {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.doc-card-favorite-btn.active {
+  color: #e74c3c;
+}
+
 .doc-card-bookmark-badge {
   position: absolute;
   top: 6px;

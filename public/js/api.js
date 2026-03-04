@@ -113,6 +113,18 @@ var API = (function () {
       );
     },
 
+    getFavorites: function () {
+      return request('GET', '/api/favorites');
+    },
+
+    addFavorite: function (docId) {
+      return request('POST', '/api/documents/' + docId + '/favorite');
+    },
+
+    removeFavorite: function (docId) {
+      return request('DELETE', '/api/documents/' + docId + '/favorite');
+    },
+
     getSettings: function () {
       return request('GET', '/api/settings');
     },

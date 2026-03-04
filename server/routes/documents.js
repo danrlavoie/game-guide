@@ -27,6 +27,36 @@ router.get('/', function (req, res) {
     '
       )
       .all(req.deviceId, limit);
+
+    // Attach is_favorite for recent documents
+    if (rows.length > 0) {
+      var recentIds = rows.map(function (d) {
+        return d.id;
+      });
+      var recentPlaceholders = recentIds
+        .map(function () {
+          return '?';
+        })
+        .join(',');
+      var favStmt = db.prepare(
+        'SELECT document_id FROM favorites WHERE device_id = ? AND document_id IN (' +
+          recentPlaceholders +
+          ')'
+      );
+      var favRows = favStmt.all.apply(
+        favStmt,
+        [req.deviceId].concat(recentIds)
+      );
+      var favSet = {};
+      favRows.forEach(function (r) {
+        favSet[r.document_id] = true;
+      });
+      rows = rows.map(function (doc) {
+        doc.is_favorite = !!favSet[doc.id];
+        return doc;
+      });
+    }
+
     return res.json({ documents: rows });
   }
 
@@ -137,6 +167,25 @@ router.get('/', function (req, res) {
       doc.bookmark_count = bmMap[doc.id] || 0;
       return doc;
     });
+
+    // Attach is_favorite
+    var folderFavStmt = db.prepare(
+      'SELECT document_id FROM favorites WHERE device_id = ? AND document_id IN (' +
+        placeholders +
+        ')'
+    );
+    var folderFavRows = folderFavStmt.all.apply(
+      folderFavStmt,
+      [req.deviceId].concat(docIds)
+    );
+    var folderFavSet = {};
+    folderFavRows.forEach(function (r) {
+      folderFavSet[r.document_id] = true;
+    });
+    documents = documents.map(function (doc) {
+      doc.is_favorite = !!folderFavSet[doc.id];
+      return doc;
+    });
   }
 
   res.json({
@@ -170,6 +219,12 @@ router.get('/:id', function (req, res) {
 
   doc.current_page = progress ? progress.current_page : null;
   doc.last_read = progress ? progress.last_read_at : null;
+
+  // Attach is_favorite
+  var fav = db
+    .prepare('SELECT 1 FROM favorites WHERE device_id = ? AND document_id = ?')
+    .get(req.deviceId, doc.id);
+  doc.is_favorite = !!fav;
 
   res.json(doc);
 });
@@ -471,6 +526,31 @@ router.delete('/:id/bookmarks/:bookmarkId', function (req, res) {
   if (result.changes === 0) {
     return res.status(404).json({ error: 'Bookmark not found' });
   }
+
+  res.json({ success: true });
+});
+
+// Add a favorite
+router.post('/:id/favorite', function (req, res) {
+  var db = getDb();
+  var doc = db
+    .prepare('SELECT id FROM documents WHERE id = ?')
+    .get(req.params.id);
+  if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+  db.prepare(
+    'INSERT OR IGNORE INTO favorites (device_id, document_id) VALUES (?, ?)'
+  ).run(req.deviceId, req.params.id);
+
+  res.json({ success: true });
+});
+
+// Remove a favorite
+router.delete('/:id/favorite', function (req, res) {
+  var db = getDb();
+  db.prepare(
+    'DELETE FROM favorites WHERE device_id = ? AND document_id = ?'
+  ).run(req.deviceId, req.params.id);
 
   res.json({ success: true });
 });
