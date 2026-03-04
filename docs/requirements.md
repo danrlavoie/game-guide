@@ -25,7 +25,7 @@
 - Server-rendered page images (JPEG, 150 DPI)
 - Touch navigation: tap right = next, tap left = prev, tap center = toggle toolbar
 - Swipe left/right for page turning
-- Toolbar with: back button, page indicator, page jump input, spread toggle, alignment toggle, download button
+- Toolbar with: back button, page indicator, page jump input, spread toggle, alignment toggle, bookmark toggle, bookmarks list, download button
 - Progress bar at bottom of screen
 - Single-page mode: 3-page preload window (previous, current, next)
 - Two-page spread mode: side-by-side display, 6-page preload window (3 pairs)
@@ -39,6 +39,17 @@
 - Auto-save current page position (debounced, every 2 seconds)
 - Resume reading from last position
 - Per-device tracking (cookie-based, no login)
+
+### Page Bookmarks
+
+- Bookmark pages within a book, optionally with a label (up to 100 characters)
+- Star icon in viewer toolbar toggles bookmark on current page (outline ☆ / filled ★)
+- Dropdown panel below toolbar lists all bookmarks with page numbers and labels
+- Click a bookmark to jump-navigate to that page (respects spread mode page pairing)
+- Inline label editing (tap edit, type label, save on Enter/blur)
+- Bookmarks can be deleted from the panel
+- Documents with bookmarks show a gold star badge on the browse page card thumbnail
+- Bookmarks are per-device (scoped by device cookie, no login)
 
 ### Text Viewer
 
@@ -82,8 +93,9 @@
 
 ## Future Features
 
-- Favorites / bookmarks
-  - Both being able to favorite a particular book, and being able to mark pages within a book as bookmarked, optionally with a name e.g. "cheat codes here", therefore making that page easily navigable when reading the book
+- Favorites
+  - Both being able to favorite a particular book, surfacing it in a new special carousel or grid or list alongside the recent books.
+- ~~Bookmarking~~ (implemented — star toggle in viewer toolbar, dropdown panel with labeled bookmarks, jump navigation respecting spread mode, inline label editing, delete support, gold star badge on browse page cards)
 - Notes and annotations
 - Chapter navigation (PDF table of contents)
 - Related documents grouping

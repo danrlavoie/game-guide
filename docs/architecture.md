@@ -179,21 +179,39 @@ These constraints shaped the frontend architecture:
 
 Per-document settings allow overriding device-level defaults for individual books. The viewer resolves settings with cascading priority: default → device setting → document-specific override.
 
+### bookmarks
+
+| Column      | Type       | Description                                  |
+| ----------- | ---------- | -------------------------------------------- |
+| id          | INTEGER PK | Auto-increment                               |
+| device_id   | TEXT       | FK to devices                                |
+| document_id | INTEGER    | FK to documents (CASCADE delete)             |
+| page_number | INTEGER    | Bookmarked page                              |
+| label       | TEXT       | Optional label (up to 100 chars, default '') |
+| created_at  | TEXT       | ISO timestamp                                |
+| UNIQUE      |            | (device_id, document_id, page_number)        |
+
+Bookmarks are per-device, per-document. One bookmark per page per device. The document list API attaches `bookmark_count` for the current device to each document.
+
 ## API Endpoints
 
-| Method  | Path                                | Purpose                                                       |
-| ------- | ----------------------------------- | ------------------------------------------------------------- |
-| GET     | `/api/documents`                    | List documents + subfolders (paginated, filterable by folder) |
-| GET     | `/api/documents?recent=true`        | Recently viewed by this device                                |
-| GET     | `/api/documents/:id`                | Document detail                                               |
-| GET     | `/api/documents/:id/pages/:pageNum` | Rendered page as JPEG                                         |
-| GET     | `/api/documents/:id/thumbnail`      | Thumbnail image (200px wide)                                  |
-| GET     | `/api/documents/:id/content`        | Raw text content (TXT files only)                             |
-| GET     | `/api/documents/:id/download`       | Download original file                                        |
-| GET     | `/api/search?q=term`                | Search by filename/path                                       |
-| GET/PUT | `/api/documents/:id/progress`       | Read/save reading progress                                    |
-| GET     | `/api/documents/:id/settings`       | Get document settings for current device                      |
-| PUT     | `/api/documents/:id/settings`       | Upsert a document setting (`{ key, value }`)                  |
-| GET     | `/api/settings`                     | Get all settings for current device                           |
-| PUT     | `/api/settings`                     | Upsert a setting (`{ key, value }`)                           |
-| POST    | `/api/scan`                         | Trigger directory re-scan                                     |
+| Method  | Path                                       | Purpose                                                       |
+| ------- | ------------------------------------------ | ------------------------------------------------------------- |
+| GET     | `/api/documents`                           | List documents + subfolders (paginated, filterable by folder) |
+| GET     | `/api/documents?recent=true`               | Recently viewed by this device                                |
+| GET     | `/api/documents/:id`                       | Document detail                                               |
+| GET     | `/api/documents/:id/pages/:pageNum`        | Rendered page as JPEG                                         |
+| GET     | `/api/documents/:id/thumbnail`             | Thumbnail image (200px wide)                                  |
+| GET     | `/api/documents/:id/content`               | Raw text content (TXT files only)                             |
+| GET     | `/api/documents/:id/download`              | Download original file                                        |
+| GET     | `/api/search?q=term`                       | Search by filename/path                                       |
+| GET/PUT | `/api/documents/:id/progress`              | Read/save reading progress                                    |
+| GET     | `/api/documents/:id/bookmarks`             | List bookmarks for current device                             |
+| POST    | `/api/documents/:id/bookmarks`             | Add bookmark (`{ page_number, label? }`)                      |
+| PUT     | `/api/documents/:id/bookmarks/:bookmarkId` | Update bookmark label (`{ label }`)                           |
+| DELETE  | `/api/documents/:id/bookmarks/:bookmarkId` | Delete a bookmark                                             |
+| GET     | `/api/documents/:id/settings`              | Get document settings for current device                      |
+| PUT     | `/api/documents/:id/settings`              | Upsert a document setting (`{ key, value }`)                  |
+| GET     | `/api/settings`                            | Get all settings for current device                           |
+| PUT     | `/api/settings`                            | Upsert a setting (`{ key, value }`)                           |
+| POST    | `/api/scan`                                | Trigger directory re-scan                                     |
