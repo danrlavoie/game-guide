@@ -250,6 +250,7 @@ var ViewerPage = (function () {
       img.className = 'viewer-page-img';
       var loadPage = currentPage;
       img.onload = function () {
+        img._loaded = true;
         if (currentPage !== loadPage) return;
         pageContainer.innerHTML = '';
         pageContainer.appendChild(img);
@@ -259,7 +260,7 @@ var ViewerPage = (function () {
         pageContainer.innerHTML =
           '<div class="viewer-loading">Error loading page</div>';
       };
-      if (img.complete && img.naturalWidth) {
+      if (img._loaded) {
         pageContainer.innerHTML = '';
         pageContainer.appendChild(img);
       }
@@ -289,6 +290,7 @@ var ViewerPage = (function () {
         var leftImg = getImage(leftPage);
         leftImg.className = 'viewer-page-img';
         leftImg.onload = function () {
+          leftImg._loaded = true;
           if (currentPage !== loadTarget) return;
           leftSlot.innerHTML = '';
           leftSlot.appendChild(leftImg);
@@ -299,7 +301,7 @@ var ViewerPage = (function () {
           loaded.left = true;
           tryFinish();
         };
-        if (leftImg.complete && leftImg.naturalWidth) {
+        if (leftImg._loaded) {
           leftSlot.appendChild(leftImg);
           loaded.left = true;
         }
@@ -309,6 +311,7 @@ var ViewerPage = (function () {
         var rightImg = getImage(rightPage);
         rightImg.className = 'viewer-page-img';
         rightImg.onload = function () {
+          rightImg._loaded = true;
           if (currentPage !== loadTarget) return;
           rightSlot.innerHTML = '';
           rightSlot.appendChild(rightImg);
@@ -319,7 +322,7 @@ var ViewerPage = (function () {
           loaded.right = true;
           tryFinish();
         };
-        if (rightImg.complete && rightImg.naturalWidth) {
+        if (rightImg._loaded) {
           rightSlot.appendChild(rightImg);
           loaded.right = true;
         }
@@ -348,6 +351,9 @@ var ViewerPage = (function () {
     }
 
     var img = new Image();
+    img.onload = function () {
+      img._loaded = true;
+    };
     img.src = API.getPageUrl(doc.id, pageNum);
     preloadedImages[pageNum] = img;
     return img;
