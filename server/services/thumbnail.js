@@ -118,18 +118,30 @@ function generateCbzThumbnail(cbzPath, thumbPath) {
         '" -d "' +
         tempDir +
         '"'
-    ).then(function () {
-      var extractedPath = path.join(tempDir, path.basename(firstImage));
+    )
+      .catch(function () {
+        // Exit code 1 = warning (e.g. Unicode issues) but file may have extracted
+        if (findFirstImageInDir(tempDir)) return;
+        // Filename encoding mismatch — extract all files as fallback
+        return execAsync(
+          'unzip -o -j "' + escapedPath + '" -d "' + tempDir + '"'
+        );
+      })
+      .then(function () {
+        var extractedFile = findFirstImageInDir(tempDir);
+        if (!extractedFile) {
+          throw new Error('No images extracted from CBZ');
+        }
 
-      return sharp(extractedPath)
-        .resize(config.thumbnailWidth)
-        .jpeg({ quality: 80 })
-        .toFile(thumbPath)
-        .then(function () {
-          fs.rmSync(tempDir, { recursive: true, force: true });
-          return thumbPath;
-        });
-    });
+        return sharp(path.join(tempDir, extractedFile))
+          .resize(config.thumbnailWidth)
+          .jpeg({ quality: 80 })
+          .toFile(thumbPath)
+          .then(function () {
+            fs.rmSync(tempDir, { recursive: true, force: true });
+            return thumbPath;
+          });
+      });
   });
 }
 
@@ -193,6 +205,18 @@ function generateCbrThumbnail(cbrPath, thumbPath) {
   });
 }
 
+function findFirstImageInDir(dir) {
+  var files = fs
+    .readdirSync(dir)
+    .filter(function (f) {
+      return (
+        /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(f) && !f.startsWith('__MACOSX')
+      );
+    })
+    .sort();
+  return files.length > 0 ? files[0] : null;
+}
+
 function generateBatch(docs) {
   var db = getDb();
   var updateStmt = db.prepare(
@@ -246,4 +270,18 @@ function generateBatch(docs) {
   return chain;
 }
 
-module.exports = { getThumbnail, generateBatch };
+function cleanupTempDirs() {
+  if (!fs.existsSync(config.thumbnailsPath)) return;
+  var entries = fs.readdirSync(config.thumbnailsPath);
+  entries.forEach(function (entry) {
+    if (entry.startsWith('tmp_')) {
+      fs.rmSync(path.join(config.thumbnailsPath, entry), {
+        recursive: true,
+        force: true,
+      });
+      log.info({ dir: entry }, 'Cleaned up orphaned temp directory');
+    }
+  });
+}
+
+module.exports = { getThumbnail, generateBatch, cleanupTempDirs };
