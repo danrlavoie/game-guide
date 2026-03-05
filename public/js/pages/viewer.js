@@ -521,10 +521,10 @@ var ViewerPage = (function () {
   function initDebugOsd() {
     debugOsd = document.createElement('div');
     debugOsd.style.cssText =
-      'position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.8);' +
-      'color:#0f0;font:11px/1.4 monospace;padding:6px 8px;z-index:99999;' +
+      'position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.8);' +
+      'color:#0f0;font:11px/1.4 monospace;padding:6px 8px;z-index:200;' +
       'pointer-events:none;white-space:pre;max-height:30vh;overflow:hidden;';
-    document.body.appendChild(debugOsd);
+    pageContainer.parentNode.appendChild(debugOsd);
     debugTimer = setInterval(updateDebugOsd, 200);
   }
 
