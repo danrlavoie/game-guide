@@ -77,7 +77,11 @@ function generateCbzThumbnail(cbzPath, thumbPath) {
   }
 
   var escapedPath = shellEscape(cbzPath);
-  var tempDir = path.dirname(thumbPath);
+  var tempDir = path.join(
+    path.dirname(thumbPath),
+    'tmp_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8)
+  );
+  fs.mkdirSync(tempDir, { recursive: true });
 
   return execAsync('unzip -l "' + escapedPath + '"').then(function (stdout) {
     var lines = stdout.split('\n');
@@ -99,6 +103,7 @@ function generateCbzThumbnail(cbzPath, thumbPath) {
     imageFiles.sort();
 
     if (imageFiles.length === 0) {
+      fs.rmdirSync(tempDir);
       throw new Error('No images found in CBZ');
     }
 
@@ -122,6 +127,7 @@ function generateCbzThumbnail(cbzPath, thumbPath) {
         .toFile(thumbPath)
         .then(function () {
           fs.unlinkSync(extractedPath);
+          fs.rmdirSync(tempDir);
           return thumbPath;
         });
     });
@@ -134,7 +140,11 @@ function generateCbrThumbnail(cbrPath, thumbPath) {
   }
 
   var escapedPath = shellEscape(cbrPath);
-  var tempDir = path.dirname(thumbPath);
+  var tempDir = path.join(
+    path.dirname(thumbPath),
+    'tmp_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8)
+  );
+  fs.mkdirSync(tempDir, { recursive: true });
 
   return execAsync('unrar lb "' + escapedPath + '"').then(function (stdout) {
     var lines = stdout.split('\n');
@@ -154,6 +164,7 @@ function generateCbrThumbnail(cbrPath, thumbPath) {
     imageFiles.sort();
 
     if (imageFiles.length === 0) {
+      fs.rmdirSync(tempDir);
       throw new Error('No images found in CBR');
     }
 
@@ -177,6 +188,7 @@ function generateCbrThumbnail(cbrPath, thumbPath) {
         .toFile(thumbPath)
         .then(function () {
           fs.unlinkSync(extractedPath);
+          fs.rmdirSync(tempDir);
           return thumbPath;
         });
     });
