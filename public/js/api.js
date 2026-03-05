@@ -132,5 +132,9 @@ var API = (function () {
     saveSetting: function (key, value) {
       return request('PUT', '/api/settings', { key: key, value: value });
     },
+
+    getHealth: function () {
+      return request('GET', '/api/health');
+    },
   };
 })();

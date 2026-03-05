@@ -16,7 +16,7 @@ The viewer uses a preload window pattern:
 1. `getImage(pageNum)` creates an `Image` object and sets `img.src` to the server endpoint
 2. Images are cached in a `preloadedImages` object (3-page window in single mode, 6 in spread)
 3. `showPage()` retrieves the image from cache and either:
-   - **Fast path**: if `img.complete && img.naturalWidth`, appends immediately (no wait)
+   - **Fast path**: if the image is already loaded, appends immediately (no wait)
    - **Normal path**: sets `img.onload` to append when fully loaded
 4. Server renders pages on-demand and caches the JPEG to disk for subsequent requests
 
@@ -32,7 +32,7 @@ When flipping quickly, the preloaded image for the next page may have started lo
 
 **Fix applied (commit 7eb7336):** Added an explicit `_loaded` flag set only inside `onload` handlers. Replaced all `img.complete && img.naturalWidth` checks with `img._loaded` to guarantee the image is fully decoded before the fast path fires.
 
-**Result:** Did not fix the issue. The partial rendering still occurs on the iPad.
+**Result:** Did not fix the issue. The partial rendering still occurs on the iPad. However, the `_loaded` fix was retained as a correctness improvement — `img.complete` was genuinely unreliable for in-flight images.
 
 ### Step 2: Adding Debug OSD
 
@@ -52,13 +52,56 @@ Since Safari on iPad (iOS 10) can't be debugged remotely from Linux (requires ma
 
 **Fix (commit 46a8137):** Moved OSD inside the viewer element with `position: absolute` and `z-index: 200` (above the toolbar's 110 and bookmark panel's 120).
 
-**Status:** Waiting for CI to deploy so we can test on iPad with visible OSD.
+### Step 3: OSD Observations — The Key Clue
 
-## Next Steps
+With the OSD visible on iPad, the debug data showed:
 
-- Observe OSD output on iPad when the partial render occurs
-- Determine whether `_loaded` is correctly `false` when the bug triggers (meaning the fast path fix is working but the normal `onload` path also has an issue)
-- Or discover a different root cause visible in the debug data
+```
+page=1/417 mode=single
+imgs in DOM: 1
+  img[0] complete=true natural=4784x6755 display=768x928 _loaded=true
+cache: 2 (ready=[1,2] pending=[])
+loading msg: none
+```
+
+Two critical observations:
+
+1. **Image dimensions were enormous:** `4784x6755` = 32.3 megapixels. This comes from a game guide PDF with oversized page dimensions (roughly 32" x 45" at 150 DPI). Initially this seemed like it might exceed Safari's ~16.7MP image limit, but the next clue ruled that out.
+
+2. **The OSD itself revealed the rendering:** The portion of the page image _behind the OSD_ was rendering correctly. The area outside the OSD showed only the tiny rectangle on a dark gray background. This meant the image data was fully loaded and decoded — Safari just wasn't painting it.
+
+This ruled out the megapixel hypothesis (Safari would subsample or reject the whole image, not render only part of it) and pointed to a **compositing/repaint bug**.
+
+### Step 4: Root Cause — Safari Compositing Repaint Bug
+
+**Root cause:** iOS Safari 10 has a rendering bug where it can skip repainting an image region after the image finishes decoding, particularly when:
+
+- The image is appended to the DOM before decoding completes
+- Page transitions happen rapidly (the compositor thinks the painted region is current when it isn't)
+
+The OSD was accidentally forcing a repaint in its region because its semi-transparent `background: rgba(0,0,0,0.8)` causes Safari to composite that area as a separate layer, which triggers a paint pass for the underlying content.
+
+**Fix (commit f7bdb77):** Added a `forceRepaint()` function that:
+
+1. Reads `el.offsetHeight` — forces a synchronous layout calculation
+2. Sets `webkitTransform: translateZ(0)` — promotes the element to a compositing layer, forcing Safari to do a full paint pass
+3. Removes the transform on the next frame via `setTimeout(fn, 0)` — avoids keeping an unnecessary compositing layer
+
+This is called after every image append in both single and spread modes.
+
+**Result:** Fixed the issue. Rapid page flips on the 32MP document now render correctly every time.
+
+## Lessons Learned
+
+1. **`img.complete` is unreliable** for images that are still loading. Use explicit flags set in `onload` handlers.
+
+2. **Stacking contexts in Safari** are strict. A `position: fixed` element with a z-index creates an isolated stacking context — children of `document.body` cannot paint above it regardless of their own z-index.
+
+3. **Safari compositing bugs** can cause images to appear partially painted. The classic fix is to force a repaint by promoting the element to its own compositing layer via `translateZ(0)`.
+
+4. **Debug OSD overlays** are invaluable when remote debugging isn't available. The OSD not only showed us the image state but also _accidentally revealed the root cause_ by forcing repaints in its own region.
+
+5. **Large PDF page dimensions** can produce unexpectedly huge rendered images. A document at 150 DPI with 32" x 45" pages produces 32MP images — worth considering a max dimension cap in the renderer for future robustness.
 
 ## Related Commits
 
@@ -67,3 +110,8 @@ Since Safari on iPad (iOS 10) can't be debugged remotely from Linux (requires ma
 | `7eb7336` | Replace `img.complete` fast path with `_loaded` flag |
 | `917d3d4` | Add debug OSD overlay to viewer                      |
 | `46a8137` | Fix OSD visibility on iPad (stacking context)        |
+| `f7bdb77` | Force repaint after image append (the actual fix)    |
+
+## Debug OSD
+
+The debug OSD is retained as a diagnostic tool, controlled by the `DEBUG_OSD` environment variable. Set `DEBUG_OSD=1` or `DEBUG_OSD=true` to enable it. It can be passed through docker-compose or set directly when running the server. See the environment variables section in the docker-compose.yml.

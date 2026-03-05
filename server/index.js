@@ -25,7 +25,11 @@ app.use('/api', require('./routes/scan'));
 
 // Health check
 app.get('/api/health', function (req, res) {
-  res.json({ status: 'ok', documentsPath: config.documentsPath });
+  res.json({
+    status: 'ok',
+    documentsPath: config.documentsPath,
+    debugOsd: config.debugOsd,
+  });
 });
 
 // SPA fallback - serve index.html for non-API routes

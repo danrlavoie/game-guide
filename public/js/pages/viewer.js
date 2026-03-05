@@ -193,7 +193,11 @@ var ViewerPage = (function () {
     container.innerHTML = '';
     container.appendChild(viewer);
 
-    initDebugOsd();
+    API.getHealth()
+      .then(function (health) {
+        if (health.debugOsd) initDebugOsd();
+      })
+      .catch(function () {});
   }
 
   function updateContainerClass() {

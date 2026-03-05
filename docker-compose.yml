@@ -12,4 +12,5 @@ services:
       - PAGE_QUALITY=${PAGE_QUALITY:-85}
       - SCAN_INTERVAL=${SCAN_INTERVAL:-0}
       - LOG_LEVEL=${LOG_LEVEL:-info}
+      - DEBUG_OSD=${DEBUG_OSD:-}
     restart: unless-stopped

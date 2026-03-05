@@ -8,6 +8,7 @@ var config = {
   thumbnailWidth: parseInt(process.env.THUMBNAIL_WIDTH, 10) || 200,
   scanIntervalMinutes: parseInt(process.env.SCAN_INTERVAL, 10) || 0,
   pageQuality: parseInt(process.env.PAGE_QUALITY, 10) || 85,
+  debugOsd: process.env.DEBUG_OSD === '1' || process.env.DEBUG_OSD === 'true',
 };
 
 // Derived paths
