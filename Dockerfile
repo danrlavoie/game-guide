@@ -1,7 +1,9 @@
-FROM node:20-alpine
+FROM node:20-slim
 
 # Install poppler-utils (pdftoppm, pdfinfo), unzip for CBZ, unrar for CBR
-RUN apk add --no-cache poppler-utils unzip unrar
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    poppler-utils unzip unrar-free \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
