@@ -258,6 +258,7 @@ var ViewerPage = (function () {
         if (currentPage !== loadPage) return;
         pageContainer.innerHTML = '';
         pageContainer.appendChild(img);
+        forceRepaint(img);
       };
       img.onerror = function () {
         if (currentPage !== loadPage) return;
@@ -287,6 +288,10 @@ var ViewerPage = (function () {
         if (loaded.left && loaded.right && currentPage === loadTarget) {
           pageContainer.innerHTML = '';
           pageContainer.appendChild(wrapper);
+          var images = wrapper.querySelectorAll('img');
+          for (var fi = 0; fi < images.length; fi++) {
+            forceRepaint(images[fi]);
+          }
         }
       }
 
@@ -516,6 +521,16 @@ var ViewerPage = (function () {
       cleanup();
       window.history.back();
     }
+  }
+
+  function forceRepaint(el) {
+    // Force Safari to fully repaint the image by triggering a
+    // layout read then toggling a composite layer via transform
+    void el.offsetHeight;
+    el.style.webkitTransform = 'translateZ(0)';
+    setTimeout(function () {
+      el.style.webkitTransform = '';
+    }, 0);
   }
 
   function initDebugOsd() {
