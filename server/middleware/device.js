@@ -1,5 +1,6 @@
 var { v4: uuidv4 } = require('uuid');
 var { getDb } = require('../db');
+var log = require('../logger').child({ component: 'device' });
 
 var COOKIE_NAME = 'game_guide_device_id';
 var COOKIE_MAX_AGE = 10 * 365 * 24 * 60 * 60 * 1000; // 10 years
@@ -13,8 +14,8 @@ function deviceMiddleware(req, res, next) {
     res.cookie(COOKIE_NAME, deviceId, {
       maxAge: COOKIE_MAX_AGE,
       httpOnly: true,
-      sameSite: 'lax',
     });
+    log.info({ deviceId: deviceId, url: req.url }, 'New device registered');
   }
 
   // Upsert device record
