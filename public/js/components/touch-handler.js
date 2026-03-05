@@ -6,6 +6,7 @@ var TouchHandler = (function () {
     var isSwiping = false;
     var SWIPE_THRESHOLD = 50;
     var SWIPE_TIME_LIMIT = 500;
+    var lastTouchEnd = 0;
 
     container.addEventListener(
       'touchstart',
@@ -56,6 +57,7 @@ var TouchHandler = (function () {
 
         // Check for tap (minimal movement)
         if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10 && elapsed < 300) {
+          lastTouchEnd = Date.now();
           var containerWidth = container.offsetWidth;
           var tapX = touch.clientX;
 
@@ -76,6 +78,7 @@ var TouchHandler = (function () {
     var mouseStartX = 0;
 
     container.addEventListener('mousedown', function (e) {
+      if (Date.now() - lastTouchEnd < 500) return;
       mouseDown = true;
       mouseStartX = e.clientX;
       startTime = Date.now();

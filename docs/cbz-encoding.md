@@ -19,9 +19,9 @@ In 2006, the PKWARE APPNOTE added a "Language encoding flag" (bit 11 of the gene
 
 The Info-ZIP `unzip` utility (the standard one on most Linux distros) handles this situation poorly:
 
-1. **Listing (`unzip -l`):** It reads the raw filename bytes and tries to display them. If the bytes aren't valid in the current locale (usually UTF-8), it may transliterate, substitute, or mangle characters. The *displayed* filename is its best guess at rendering the bytes as text.
+1. **Listing (`unzip -l`):** It reads the raw filename bytes and tries to display them. If the bytes aren't valid in the current locale (usually UTF-8), it may transliterate, substitute, or mangle characters. The _displayed_ filename is its best guess at rendering the bytes as text.
 
-2. **Extraction (`unzip -o -j archive.zip "filename"`):** It compares the filename argument against the *raw bytes* stored in the archive. If you pass the displayed/mangled version back, it won't match the raw bytes, and you get "filename not matched."
+2. **Extraction (`unzip -o -j archive.zip "filename"`):** It compares the filename argument against the _raw bytes_ stored in the archive. If you pass the displayed/mangled version back, it won't match the raw bytes, and you get "filename not matched."
 
 This is the core mismatch: `unzip -l` shows you one thing, but `unzip` expects the internal representation when extracting by name.
 
@@ -39,7 +39,7 @@ Passing `³K³C³h.jpg` back to `unzip` for extraction fails because those aren'
 
 ## The Unicode Warning Problem (Exit Code 1)
 
-Even when filenames *are* UTF-8, `unzip` can stumble on certain characters. If a filename contains characters like `™` (U+2122), `©`, or other non-ASCII Unicode, `unzip` may:
+Even when filenames _are_ UTF-8, `unzip` can stumble on certain characters. If a filename contains characters like `™` (U+2122), `©`, or other non-ASCII Unicode, `unzip` may:
 
 1. Successfully extract the file
 2. Print a warning about the filename encoding
