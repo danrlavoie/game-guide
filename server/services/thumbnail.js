@@ -103,7 +103,7 @@ function generateCbzThumbnail(cbzPath, thumbPath) {
     imageFiles.sort();
 
     if (imageFiles.length === 0) {
-      fs.rmdirSync(tempDir);
+      fs.rmSync(tempDir, { recursive: true, force: true });
       throw new Error('No images found in CBZ');
     }
 
@@ -126,8 +126,7 @@ function generateCbzThumbnail(cbzPath, thumbPath) {
         .jpeg({ quality: 80 })
         .toFile(thumbPath)
         .then(function () {
-          fs.unlinkSync(extractedPath);
-          fs.rmdirSync(tempDir);
+          fs.rmSync(tempDir, { recursive: true, force: true });
           return thumbPath;
         });
     });
@@ -164,7 +163,7 @@ function generateCbrThumbnail(cbrPath, thumbPath) {
     imageFiles.sort();
 
     if (imageFiles.length === 0) {
-      fs.rmdirSync(tempDir);
+      fs.rmSync(tempDir, { recursive: true, force: true });
       throw new Error('No images found in CBR');
     }
 
@@ -187,8 +186,7 @@ function generateCbrThumbnail(cbrPath, thumbPath) {
         .jpeg({ quality: 80 })
         .toFile(thumbPath)
         .then(function () {
-          fs.unlinkSync(extractedPath);
-          fs.rmdirSync(tempDir);
+          fs.rmSync(tempDir, { recursive: true, force: true });
           return thumbPath;
         });
     });
