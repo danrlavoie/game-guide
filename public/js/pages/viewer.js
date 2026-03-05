@@ -11,6 +11,8 @@ var ViewerPage = (function () {
   var page1Side = 'left';
   var isFavorited = false;
   var bookmarks = [];
+  var debugOsd = null;
+  var debugTimer = null;
   var bookmarkPanel = null;
 
   function render(container, docId) {
@@ -190,6 +192,8 @@ var ViewerPage = (function () {
 
     container.innerHTML = '';
     container.appendChild(viewer);
+
+    initDebugOsd();
   }
 
   function updateContainerClass() {
@@ -514,6 +518,74 @@ var ViewerPage = (function () {
     }
   }
 
+  function initDebugOsd() {
+    debugOsd = document.createElement('div');
+    debugOsd.style.cssText =
+      'position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.8);' +
+      'color:#0f0;font:11px/1.4 monospace;padding:6px 8px;z-index:99999;' +
+      'pointer-events:none;white-space:pre;max-height:30vh;overflow:hidden;';
+    document.body.appendChild(debugOsd);
+    debugTimer = setInterval(updateDebugOsd, 200);
+  }
+
+  function updateDebugOsd() {
+    if (!debugOsd) return;
+    var lines = [];
+    lines.push(
+      'page=' + currentPage + '/' + totalPages + '  mode=' + spreadMode
+    );
+
+    var imgs = pageContainer ? pageContainer.querySelectorAll('img') : [];
+    lines.push('imgs in DOM: ' + imgs.length);
+    for (var i = 0; i < imgs.length; i++) {
+      var im = imgs[i];
+      lines.push(
+        '  img[' +
+          i +
+          '] complete=' +
+          im.complete +
+          ' natural=' +
+          im.naturalWidth +
+          'x' +
+          im.naturalHeight +
+          ' display=' +
+          im.width +
+          'x' +
+          im.height +
+          ' _loaded=' +
+          (im._loaded || false)
+      );
+    }
+
+    var cached = Object.keys(preloadedImages);
+    var readyList = [];
+    var pendingList = [];
+    cached.forEach(function (k) {
+      if (preloadedImages[k]._loaded) {
+        readyList.push(k);
+      } else {
+        pendingList.push(k);
+      }
+    });
+    lines.push(
+      'cache: ' +
+        cached.length +
+        ' (ready=[' +
+        readyList.join(',') +
+        '] pending=[' +
+        pendingList.join(',') +
+        '])'
+    );
+
+    // Show what the loading state looks like
+    var loadingDiv = pageContainer
+      ? pageContainer.querySelector('.viewer-loading')
+      : null;
+    lines.push('loading msg: ' + (loadingDiv ? 'visible' : 'none'));
+
+    debugOsd.textContent = lines.join('\n');
+  }
+
   function cleanup() {
     document.removeEventListener('keydown', handleKeyboard);
     clearTimeout(saveTimer);
@@ -522,6 +594,13 @@ var ViewerPage = (function () {
     if (doc) {
       API.saveProgress(doc.id, currentPage).catch(function () {});
     }
+
+    clearInterval(debugTimer);
+    if (debugOsd && debugOsd.parentNode) {
+      debugOsd.parentNode.removeChild(debugOsd);
+    }
+    debugOsd = null;
+    debugTimer = null;
 
     doc = null;
     preloadedImages = {};
