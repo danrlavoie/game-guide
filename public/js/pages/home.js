@@ -4,8 +4,8 @@ var HomePage = (function () {
       '<div class="header">' +
       '<h1>Game Guide</h1>' +
       '<div class="header-actions">' +
-      '<button class="scan-btn" id="scan-btn">Scan</button>' +
-      '<a href="#/settings" class="scan-btn" style="margin-left: 8px;">Settings</a>' +
+      '<button class="scan-btn" id="scan-btn"><i class="fa fa-refresh"></i> Scan</button>' +
+      '<a href="#/settings" class="scan-btn" style="margin-left: 8px;"><i class="fa fa-cog"></i> Settings</a>' +
       '</div>' +
       '</div>' +
       '<div class="search-bar">' +
@@ -33,22 +33,22 @@ var HomePage = (function () {
     // Scan button
     document.getElementById('scan-btn').addEventListener('click', function () {
       var btn = document.getElementById('scan-btn');
-      btn.textContent = 'Scanning...';
+      btn.innerHTML = '<i class="fa fa-refresh"></i> Scanning...';
       btn.disabled = true;
       API.triggerScan()
         .then(function (_result) {
-          btn.textContent = 'Done!';
+          btn.innerHTML = '<i class="fa fa-refresh"></i> Done!';
           setTimeout(function () {
-            btn.textContent = 'Scan';
+            btn.innerHTML = '<i class="fa fa-refresh"></i> Scan';
             btn.disabled = false;
           }, 2000);
           loadRecent();
           loadFavorites();
         })
         .catch(function (_err) {
-          btn.textContent = 'Error';
+          btn.innerHTML = '<i class="fa fa-refresh"></i> Error';
           setTimeout(function () {
-            btn.textContent = 'Scan';
+            btn.innerHTML = '<i class="fa fa-refresh"></i> Scan';
             btn.disabled = false;
           }, 2000);
         });

@@ -27,11 +27,13 @@
   align-items: center;
   -webkit-justify-content: space-between;
   justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(60, 42, 26, 0.2);
 }
 
 .header h1 {
   font-size: 18px;
   font-weight: 600;
+  font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
 }
 
 .header a {
@@ -49,7 +51,7 @@
   font-size: 14px;
   padding: 4px 8px;
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 /* Search bar */
@@ -63,15 +65,17 @@
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--input-border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 16px; /* Prevents iOS zoom on focus */
   background: var(--bg-tertiary);
   color: var(--text-primary);
+  box-shadow: inset 0 1px 3px rgba(60, 42, 26, 0.08);
 }
 
 .search-bar input:focus {
   border-color: var(--accent-color);
   background: var(--bg-secondary);
+  box-shadow: 0 0 0 3px rgba(200, 132, 42, 0.2);
 }
 
 /* Section headers */
@@ -81,7 +85,8 @@
   color: var(--text-secondary);
   margin: 20px 0 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 2px solid rgba(200, 132, 42, 0.3);
+  font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
 }
 
 /* Breadcrumbs */
@@ -115,10 +120,11 @@
   align-items: center;
   padding: 12px;
   background: var(--card-bg);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin-bottom: 8px;
   cursor: pointer;
   border: 1px solid var(--border-color);
+  box-shadow: 0 1px 4px var(--card-shadow);
 }
 
 .folder-item:active {
@@ -130,6 +136,7 @@
   margin-right: 12px;
   width: 32px;
   text-align: center;
+  color: var(--accent-color);
 }
 
 .folder-name {
@@ -161,25 +168,31 @@
 .btn {
   display: inline-block;
   padding: 10px 20px;
-  background: var(--accent-color);
+  background: linear-gradient(
+    to bottom,
+    var(--accent-color),
+    var(--accent-hover)
+  );
   color: white;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
   text-align: center;
+  box-shadow: 0 2px 4px rgba(60, 42, 26, 0.15);
 }
 
 .btn:active {
   background: var(--accent-hover);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .btn-secondary {
-  background: #95a5a6;
+  background: #8a7d6e;
 }
 
 .btn-secondary:active {
-  background: #7f8c8d;
+  background: #746858;
 }
 
 .btn-block {
@@ -216,7 +229,7 @@
   font-size: 13px;
   padding: 4px 12px;
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   color: var(--header-text);
 }

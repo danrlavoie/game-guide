@@ -8,7 +8,7 @@ var Toolbar = (function () {
 
     var backBtn = document.createElement('button');
     backBtn.className = 'viewer-back-btn';
-    backBtn.textContent = 'Back';
+    backBtn.innerHTML = '<i class="fa fa-arrow-left"></i> Back';
     backBtn.addEventListener('click', function () {
       if (options.onBack) options.onBack();
     });
@@ -77,10 +77,10 @@ var Toolbar = (function () {
     // Favorite toggle button (heart)
     var favoriteBtn = document.createElement('button');
     favoriteBtn.className = 'viewer-favorite-btn';
-    favoriteBtn.textContent = '\u2661';
+    favoriteBtn.innerHTML = '<i class="fa fa-heart-o"></i>';
     favoriteBtn.title = 'Favorite this document';
     if (options.isFavorited) {
-      favoriteBtn.textContent = '\u2665';
+      favoriteBtn.innerHTML = '<i class="fa fa-heart"></i>';
       favoriteBtn.classList.add('active');
     }
     favoriteBtn.addEventListener('click', function () {
@@ -91,7 +91,7 @@ var Toolbar = (function () {
     // Bookmark toggle button (star)
     var bookmarkBtn = document.createElement('button');
     bookmarkBtn.className = 'viewer-bookmark-btn';
-    bookmarkBtn.textContent = '\u2606';
+    bookmarkBtn.innerHTML = '<i class="fa fa-star-o"></i>';
     bookmarkBtn.title = 'Bookmark this page';
     bookmarkBtn.addEventListener('click', function () {
       if (options.onBookmarkToggle) options.onBookmarkToggle();
@@ -101,7 +101,7 @@ var Toolbar = (function () {
     // Bookmarks list toggle button
     var bookmarksListBtn = document.createElement('button');
     bookmarksListBtn.className = 'viewer-bookmarks-list-btn';
-    bookmarksListBtn.textContent = '\u2630';
+    bookmarksListBtn.innerHTML = '<i class="fa fa-bars"></i>';
     bookmarksListBtn.title = 'View bookmarks';
     bookmarksListBtn.addEventListener('click', function () {
       if (options.onBookmarksListToggle) options.onBookmarksListToggle();
@@ -110,7 +110,7 @@ var Toolbar = (function () {
 
     var downloadBtn = document.createElement('a');
     downloadBtn.className = 'viewer-download-btn';
-    downloadBtn.textContent = 'Download';
+    downloadBtn.innerHTML = '<i class="fa fa-download"></i> Download';
     downloadBtn.href = options.downloadUrl || '#';
     right.appendChild(downloadBtn);
 
@@ -167,7 +167,9 @@ var Toolbar = (function () {
         updateAlignBtn(alignBtn, side);
       },
       setFavorited: function (isFavorited) {
-        favoriteBtn.textContent = isFavorited ? '\u2665' : '\u2661';
+        favoriteBtn.innerHTML = isFavorited
+          ? '<i class="fa fa-heart"></i>'
+          : '<i class="fa fa-heart-o"></i>';
         if (isFavorited) {
           favoriteBtn.classList.add('active');
         } else {
@@ -175,7 +177,9 @@ var Toolbar = (function () {
         }
       },
       setBookmarked: function (isBookmarked) {
-        bookmarkBtn.textContent = isBookmarked ? '\u2605' : '\u2606';
+        bookmarkBtn.innerHTML = isBookmarked
+          ? '<i class="fa fa-star"></i>'
+          : '<i class="fa fa-star-o"></i>';
         if (isBookmarked) {
           bookmarkBtn.classList.add('active');
         } else {

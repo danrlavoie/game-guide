@@ -52,6 +52,22 @@ Safari strictly isolates stacking contexts created by `position: fixed` elements
 
 **Project fix:** Debug OSD appended inside `.viewer` instead of `document.body` — commit `46a8137`. See [docs/partial-render-investigation.md](partial-render-investigation.md).
 
+## Web Fonts: WOFF Only, Self-Hosted
+
+Safari 10 supports WOFF but not WOFF2. Since the app runs on a LAN without internet access, all fonts must be self-hosted rather than loaded from a CDN like Google Fonts.
+
+**Impact:** Font `@font-face` declarations must use `format('woff')` only. Never use `format('woff2')` — Safari 10 will silently fail to load the font.
+
+**Current fonts:**
+
+- `public/fonts/merriweather-bold.woff` — Merriweather Bold 700 (heading display font). Converted from Google Fonts TTF using `fonttools`.
+- `public/fonts/fontawesome-webfont.woff` — Font Awesome 4.7.0 (icon font). Full glyph set shipped; only the classes needed are defined in `public/css/icons.css`.
+
+**References:**
+
+- [Can I Use: WOFF2](https://caniuse.com/woff2) — Safari support started in 10.1 on macOS but not iOS 10
+- [Font Awesome 4.7.0](https://fontawesome.com/v4.7.0/) — Last release of the 4.x line; uses simple CSS classes with no JS dependency
+
 ## Unsupported JavaScript APIs
 
 These are also listed in CLAUDE.md but collected here for reference:
@@ -71,8 +87,9 @@ These are also listed in CLAUDE.md but collected here for reference:
 
 ## Unsupported CSS Features
 
-| Feature           | Alternative                    |
-| ----------------- | ------------------------------ |
-| CSS Grid          | Flexbox                        |
-| `gap` on flexbox  | Margins on children            |
-| `dvh`/`svh` units | `vh` or JavaScript measurement |
+| Feature           | Alternative                         |
+| ----------------- | ----------------------------------- |
+| CSS Grid          | Flexbox                             |
+| `gap` on flexbox  | Margins on children                 |
+| `dvh`/`svh` units | `vh` or JavaScript measurement      |
+| WOFF2 fonts       | WOFF (`format('woff')`) — see above |

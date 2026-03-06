@@ -13,7 +13,7 @@
   padding: 14px 16px;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin-bottom: 8px;
 }
 
@@ -35,6 +35,7 @@
   color: var(--text-tertiary);
   padding: 16px 16px 6px;
   letter-spacing: 0.5px;
+  font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
 }
 
 .settings-select {
@@ -43,12 +44,12 @@
   background: var(--progress-bg);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   padding: 6px 28px 6px 10px;
   font-size: 14px;
   -webkit-flex-shrink: 0;
   flex-shrink: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a7b6b'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 8px center;
 }

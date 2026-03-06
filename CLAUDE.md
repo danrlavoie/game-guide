@@ -34,7 +34,7 @@ A client-server web app that serves PDF, CBZ, CBR, and TXT game manuals/strategy
 - Optional chaining (`?.`) and nullish coalescing (`??`)
 - `Array.at()`, `Object.fromEntries()`, `String.replaceAll()`
 - Service Workers, Pointer Events, Intersection Observer
-- CSS Grid, `gap` on flexbox, `dvh`/`svh` units
+- CSS Grid, `gap` on flexbox, `dvh`/`svh` units, WOFF2 fonts (use WOFF)
 - `fetch()` AbortController
 - `fetch()` without `credentials: 'same-origin'` (Safari 10 defaults to `'omit'`)
 - Cookie `sameSite` attribute (Safari 10 may reject the cookie entirely)

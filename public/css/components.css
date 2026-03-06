@@ -1,7 +1,7 @@
 /* Document Card */
 .doc-card {
   background: var(--card-bg);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   border: 1px solid var(--border-color);
   cursor: pointer;
@@ -9,6 +9,7 @@
   display: flex;
   -webkit-flex-direction: column;
   flex-direction: column;
+  box-shadow: 0 2px 8px var(--card-shadow);
 }
 
 .doc-card:active {
@@ -63,14 +64,14 @@
 }
 
 .doc-card-favorite-btn.active {
-  color: #e74c3c;
+  color: #d45040;
 }
 
 .doc-card-bookmark-badge {
   position: absolute;
   top: 6px;
   right: 6px;
-  color: #f1c40f;
+  color: #e8b828;
   font-size: 16px;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
   pointer-events: none;
@@ -102,12 +103,14 @@
 .doc-card-progress {
   height: 3px;
   background: var(--progress-bg);
+  border-radius: 2px;
 }
 
 .doc-card-progress-bar {
   height: 100%;
   background: var(--progress-fill);
   transition: width 0.3s;
+  border-radius: 2px;
 }
 
 /* Recent documents - horizontal scroll */

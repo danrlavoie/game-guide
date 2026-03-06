@@ -12,7 +12,8 @@ var DocumentCard = (function () {
 
     var bookmarkBadge = '';
     if (doc.bookmark_count > 0) {
-      bookmarkBadge = '<span class="doc-card-bookmark-badge">\u2605</span>';
+      bookmarkBadge =
+        '<span class="doc-card-bookmark-badge"><i class="fa fa-bookmark"></i></span>';
     }
 
     var thumbHtml =
@@ -28,7 +29,9 @@ var DocumentCard = (function () {
       '" data-doc-id="' +
       doc.id +
       '">' +
-      (doc.is_favorite ? '\u2665' : '\u2661') +
+      (doc.is_favorite
+        ? '<i class="fa fa-heart"></i>'
+        : '<i class="fa fa-heart-o"></i>') +
       '</button>' +
       bookmarkBadge +
       '</div>';
@@ -93,10 +96,10 @@ var DocumentCard = (function () {
           .then(function () {
             if (isActive) {
               favBtn.classList.remove('active');
-              favBtn.textContent = '\u2661';
+              favBtn.innerHTML = '<i class="fa fa-heart-o"></i>';
             } else {
               favBtn.classList.add('active');
-              favBtn.textContent = '\u2665';
+              favBtn.innerHTML = '<i class="fa fa-heart"></i>';
             }
           })
           .catch(function () {});

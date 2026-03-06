@@ -90,7 +90,7 @@ var TextViewerPage = (function () {
     left.className = 'viewer-toolbar-left';
     var backBtn = document.createElement('button');
     backBtn.className = 'viewer-back-btn';
-    backBtn.textContent = 'Back';
+    backBtn.innerHTML = '<i class="fa fa-arrow-left"></i> Back';
     backBtn.addEventListener('click', function () {
       cleanup();
       window.history.back();
@@ -109,7 +109,7 @@ var TextViewerPage = (function () {
 
     var settingsBtn = document.createElement('button');
     settingsBtn.className = 'viewer-back-btn';
-    settingsBtn.textContent = 'Aa';
+    settingsBtn.innerHTML = '<i class="fa fa-font"></i>';
     settingsBtn.addEventListener('click', function () {
       toggleSettings();
     });
@@ -117,7 +117,7 @@ var TextViewerPage = (function () {
 
     var downloadLink = document.createElement('a');
     downloadLink.className = 'viewer-download-btn';
-    downloadLink.textContent = 'Download';
+    downloadLink.innerHTML = '<i class="fa fa-download"></i> Download';
     downloadLink.href = API.getDownloadUrl(doc.id);
     right.appendChild(downloadLink);
 

@@ -1,0 +1,61 @@
+@font-face {
+  font-family: 'FontAwesome';
+  src: url('/fonts/fontawesome-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+.fa {
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+}
+.fa-heart-o:before {
+  content: '\f08a';
+}
+.fa-heart:before {
+  content: '\f004';
+}
+.fa-star-o:before {
+  content: '\f006';
+}
+.fa-star:before {
+  content: '\f005';
+}
+.fa-bars:before {
+  content: '\f0c9';
+}
+.fa-times:before {
+  content: '\f00d';
+}
+.fa-folder:before {
+  content: '\f07b';
+}
+.fa-arrow-left:before {
+  content: '\f060';
+}
+.fa-download:before {
+  content: '\f019';
+}
+.fa-cog:before {
+  content: '\f013';
+}
+.fa-refresh:before {
+  content: '\f021';
+}
+.fa-pencil:before {
+  content: '\f040';
+}
+.fa-trash:before {
+  content: '\f1f8';
+}
+.fa-font:before {
+  content: '\f031';
+}
+.fa-bookmark:before {
+  content: '\f02e';
+}
+.fa-columns:before {
+  content: '\f0db';
+}

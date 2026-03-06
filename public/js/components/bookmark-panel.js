@@ -12,7 +12,7 @@ var BookmarkPanel = (function () {
 
     var closeBtn = document.createElement('button');
     closeBtn.className = 'bookmark-panel-close';
-    closeBtn.textContent = '\u2715';
+    closeBtn.innerHTML = '<i class="fa fa-times"></i>';
     closeBtn.addEventListener('click', function () {
       hide();
     });
@@ -71,7 +71,7 @@ var BookmarkPanel = (function () {
 
         var editBtn = document.createElement('button');
         editBtn.className = 'bookmark-panel-edit-btn';
-        editBtn.textContent = 'Edit';
+        editBtn.innerHTML = '<i class="fa fa-pencil"></i>';
         editBtn.addEventListener('click', function (e) {
           e.stopPropagation();
           showEditField(row, bm);
@@ -79,7 +79,7 @@ var BookmarkPanel = (function () {
 
         var delBtn = document.createElement('button');
         delBtn.className = 'bookmark-panel-del-btn';
-        delBtn.textContent = 'Del';
+        delBtn.innerHTML = '<i class="fa fa-trash"></i>';
         delBtn.addEventListener('click', function (e) {
           e.stopPropagation();
           if (options.onDelete) options.onDelete(bm.id);

@@ -6,7 +6,7 @@
 /* Toolbar title */
 .txt-viewer-title {
   font-size: 13px;
-  color: #ccc;
+  color: #c8bfb0;
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -20,7 +20,7 @@
 
 /* Settings panel - drops below toolbar */
 .txt-settings-panel {
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(20, 16, 10, 0.92);
   position: absolute;
   top: 40px;
   left: 0;
@@ -47,7 +47,7 @@
 
 .txt-settings-label {
   font-size: 14px;
-  color: #ccc;
+  color: #c8bfb0;
 }
 
 .txt-settings-select {

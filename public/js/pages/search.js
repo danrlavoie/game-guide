@@ -9,7 +9,7 @@ var SearchPage = (function () {
 
     container.innerHTML =
       '<div class="header">' +
-      '<a href="#/" class="header-back">Home</a>' +
+      '<a href="#/" class="header-back"><i class="fa fa-arrow-left"></i> Home</a>' +
       '<h1>Search</h1>' +
       '<span></span>' +
       '</div>' +
