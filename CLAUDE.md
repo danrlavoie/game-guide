@@ -36,7 +36,11 @@ A client-server web app that serves PDF, CBZ, CBR, and TXT game manuals/strategy
 - Service Workers, Pointer Events, Intersection Observer
 - CSS Grid, `gap` on flexbox, `dvh`/`svh` units
 - `fetch()` AbortController
+- `fetch()` without `credentials: 'same-origin'` (Safari 10 defaults to `'omit'`)
+- Cookie `sameSite` attribute (Safari 10 may reject the cookie entirely)
 - `async`/`await` IS supported (Safari 10.1+)
+
+See [docs/safari-10-references.md](docs/safari-10-references.md) for detailed explanations, external references, and project-specific fixes.
 
 ## Testing
 
