@@ -40,8 +40,6 @@ function scan() {
     var updated = 0;
     var removed = 0;
     var unchanged = 0;
-    var newDocIds = [];
-
     // Process found files
     var seenPaths = {};
     var insertStmt = db.prepare(
@@ -79,21 +77,16 @@ function scan() {
 
         if (!existingDoc) {
           // New file — insert without hashing (nothing to compare against)
-          var info = insertStmt.run(
+          insertStmt.run(
             file.relativePath,
             path.basename(file.relativePath),
             fileType,
             file.size,
-            0, // page_count filled async
+            null, // page_count filled async
             parentFolder,
             null, // hash computed lazily if needed later
             file.mtime
           );
-          newDocIds.push({
-            id: info.lastInsertRowid,
-            fullPath: file.fullPath,
-            type: fileType,
-          });
           added++;
         } else if (
           existingDoc.file_size === file.size &&
@@ -114,12 +107,7 @@ function scan() {
             unchanged++;
           } else {
             // Actually changed
-            updateStmt.run(file.size, 0, hash, file.mtime, existingDoc.id);
-            newDocIds.push({
-              id: existingDoc.id,
-              fullPath: file.fullPath,
-              type: fileType,
-            });
+            updateStmt.run(file.size, null, hash, file.mtime, existingDoc.id);
             invalidateCache(existingDoc.id);
             updated++;
           }
@@ -171,36 +159,64 @@ function scan() {
       total: files.length,
     };
 
-    // Filter txt files from background work (no page counts or thumbnails)
-    var mediaDocs = newDocIds.filter(function (d) {
-      return d.type !== 'txt';
-    });
-
-    if (mediaDocs.length === 0) {
-      return Promise.resolve({
-        result: result,
-        backgroundWork: Promise.resolve(),
-      });
-    }
-
-    // Defer page counts + thumbnails to background
-    log.info({ count: mediaDocs.length }, 'Starting background processing');
-    var backgroundWork = updatePageCounts(mediaDocs)
-      .then(function () {
-        log.info('Page counts complete, generating thumbnails');
-        return thumbnail.generateBatch(mediaDocs);
-      })
-      .then(function () {
-        log.info('Background processing complete');
-      })
-      .catch(function (err) {
-        log.error({ err: err }, 'Background processing error');
-      });
-
+    var backgroundWork = processIncompleteDocuments();
     return Promise.resolve({ result: result, backgroundWork: backgroundWork });
   } catch (err) {
     return Promise.reject(err);
   }
+}
+
+function processIncompleteDocuments() {
+  thumbnail.cleanupTempDirs();
+
+  var db = getDb();
+  var rows = db
+    .prepare(
+      "SELECT id, file_path, file_type FROM documents \
+     WHERE file_type != 'txt' AND (page_count IS NULL OR thumbnail_generated = 0)"
+    )
+    .all();
+
+  if (rows.length === 0) {
+    log.info('No incomplete documents to process');
+    return Promise.resolve();
+  }
+
+  var docs = rows.map(function (row) {
+    return {
+      id: row.id,
+      fullPath: path.join(config.documentsPath, row.file_path),
+      type: row.file_type,
+    };
+  });
+
+  log.info({ count: docs.length }, 'Processing incomplete documents');
+
+  var chain = Promise.resolve();
+  var batchSize = 50;
+  var totalBatches = Math.ceil(docs.length / batchSize);
+
+  for (var i = 0; i < docs.length; i += batchSize) {
+    (function (batch, batchNum) {
+      chain = chain.then(function () {
+        log.info(
+          { batch: batchNum, totalBatches: totalBatches, size: batch.length },
+          'Starting batch'
+        );
+        return updatePageCounts(batch).then(function () {
+          return thumbnail.generateBatch(batch);
+        });
+      });
+    })(docs.slice(i, i + batchSize), Math.floor(i / batchSize) + 1);
+  }
+
+  return chain
+    .then(function () {
+      log.info('Background processing complete');
+    })
+    .catch(function (err) {
+      log.error({ err: err }, 'Background processing error');
+    });
 }
 
 function walkDirectory(dir, rootDir) {

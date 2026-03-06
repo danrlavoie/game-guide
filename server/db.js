@@ -32,7 +32,7 @@ function initSchema() {
       file_name TEXT NOT NULL,\
       file_type TEXT NOT NULL,\
       file_size INTEGER NOT NULL,\
-      page_count INTEGER DEFAULT 0,\
+      page_count INTEGER DEFAULT NULL,\
       parent_folder TEXT NOT NULL DEFAULT '',\
       file_hash TEXT,\
       file_mtime REAL,\
@@ -114,6 +114,12 @@ function migrateSchema() {
   } catch (_err) {
     // Column already exists — ignore
   }
+
+  // Convert interrupted documents (page_count=0 with no thumbnail) to NULL
+  // so the scanner picks them up for background processing on next startup
+  db.exec(
+    'UPDATE documents SET page_count = NULL WHERE page_count = 0 AND thumbnail_generated = 0'
+  );
 }
 
 module.exports = { getDb };
