@@ -114,6 +114,9 @@ var BookmarkPanel = (function () {
       input.maxLength = 100;
       input.value = bm.label || '';
       input.placeholder = 'Add a label...';
+      input.addEventListener('click', function (e) {
+        e.stopPropagation();
+      });
 
       var saving = false;
       function saveLabel() {
