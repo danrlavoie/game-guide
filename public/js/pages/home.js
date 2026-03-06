@@ -2,7 +2,7 @@ var HomePage = (function () {
   function render(container) {
     container.innerHTML =
       '<div class="header">' +
-      '<h1>Game Guide</h1>' +
+      '<h1>The Study</h1>' +
       '<div class="header-actions">' +
       '<button class="scan-btn" id="scan-btn"><i class="fa fa-refresh"></i> Scan</button>' +
       '<a href="#/settings" class="scan-btn" style="margin-left: 8px;"><i class="fa fa-cog"></i> Settings</a>' +

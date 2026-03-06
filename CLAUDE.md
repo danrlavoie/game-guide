@@ -1,4 +1,4 @@
-# Game Guide - AI Agent Instructions
+# The Study (Game Guide) - AI Agent Instructions
 
 ## Project Overview
 

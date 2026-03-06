@@ -1,4 +1,4 @@
-# Game Guide
+# The Study
 
 A PDF/CBZ/CBR reader web app designed for reading game manuals and strategy guides on a legacy iPad 4th gen (iOS 10.3.3) over LAN. The server renders PDF pages to JPEG images, so the iPad just displays `<img>` tags - no heavy client-side processing.
 
