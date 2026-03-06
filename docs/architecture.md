@@ -62,6 +62,18 @@
    - Page counts: `pdfinfo` (PDF), `unzip -l` (CBZ), `unrar lb` (CBR) — batches of 50 in parallel. TXT files are excluded (no page count extraction).
    - Thumbnails: first page rendered at 72 DPI and resized via `sharp` — batches of 5 in parallel. TXT files are excluded (no thumbnail generation).
 
+#### Pipeline Recovery
+
+The scanning pipeline is designed to be resilient to interruption:
+
+- **Catalog phase** is transactional — either all DB changes commit or none do
+- **Background work** (page counts + thumbnails) queries the DB for incomplete documents on every startup, rather than relying on in-memory state from the catalog phase
+- `page_count = NULL` distinguishes "never counted" from "actually zero pages" — the scanner picks up any document with `page_count IS NULL` or `thumbnail_generated = 0`
+- **Batched processing** (50 documents per batch, page counts then thumbnails) bounds the incomplete window after interruption to ~50 documents
+- **Orphaned temp directories** (`tmp_*` in the thumbnails directory) are cleaned up before background processing starts
+
+This means if the server is killed mid-processing, a restart will automatically find and finish any incomplete documents.
+
 See `docs/performance.md` for detailed analysis of the scanning pipeline optimizations.
 
 ### On-Demand Page Rendering
@@ -129,7 +141,7 @@ These constraints shaped the frontend architecture:
 | file_name           | TEXT        | Display name                                          |
 | file_type           | TEXT        | 'pdf', 'cbz', 'cbr', or 'txt'                         |
 | file_size           | INTEGER     | Bytes                                                 |
-| page_count          | INTEGER     | Number of pages                                       |
+| page_count          | INTEGER     | Number of pages (NULL = not yet counted)              |
 | parent_folder       | TEXT        | Parent directory path                                 |
 | file_hash           | TEXT        | SHA-256 of first 64KB for change detection            |
 | file_mtime          | REAL        | File modification time (ms) for fast change detection |
@@ -215,7 +227,7 @@ Favorites are per-device. The document list, detail, search, and recent APIs att
 | GET     | `/api/documents/:id/thumbnail`             | Thumbnail image (200px wide)                                  |
 | GET     | `/api/documents/:id/content`               | Raw text content (TXT files only)                             |
 | GET     | `/api/documents/:id/download`              | Download original file                                        |
-| GET     | `/api/search?q=term`                       | Search by filename/path                                       |
+| GET     | `/api/search?q=term&page=1&limit=50`       | Search by filename/path (paginated)                           |
 | GET/PUT | `/api/documents/:id/progress`              | Read/save reading progress                                    |
 | GET     | `/api/documents/:id/bookmarks`             | List bookmarks for current device                             |
 | POST    | `/api/documents/:id/bookmarks`             | Add bookmark (`{ page_number, label? }`)                      |

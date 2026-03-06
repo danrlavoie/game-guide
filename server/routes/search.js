@@ -10,7 +10,18 @@ router.get('/', function (req, res) {
 
   var db = getDb();
   var limit = parseInt(req.query.limit, 10) || 50;
+  var page = parseInt(req.query.page, 10) || 1;
+  var offset = (page - 1) * limit;
   var searchTerm = '%' + q + '%';
+
+  var total = db
+    .prepare(
+      '\
+    SELECT COUNT(*) as count FROM documents \
+    WHERE file_name LIKE ? OR file_path LIKE ?\
+  '
+    )
+    .get(searchTerm, searchTerm).count;
 
   var documents = db
     .prepare(
@@ -18,10 +29,10 @@ router.get('/', function (req, res) {
     SELECT * FROM documents \
     WHERE file_name LIKE ? OR file_path LIKE ? \
     ORDER BY file_name \
-    LIMIT ?\
+    LIMIT ? OFFSET ?\
   '
     )
-    .all(searchTerm, searchTerm, limit);
+    .all(searchTerm, searchTerm, limit, offset);
 
   // Get reading progress for results
   if (documents.length > 0) {
@@ -73,7 +84,13 @@ router.get('/', function (req, res) {
     });
   }
 
-  res.json({ documents: documents, query: q });
+  res.json({
+    documents: documents,
+    query: q,
+    total: total,
+    page: page,
+    limit: limit,
+  });
 });
 
 module.exports = router;

@@ -58,8 +58,10 @@ var API = (function () {
       });
     },
 
-    search: function (query) {
-      return request('GET', '/api/search?q=' + encodeURIComponent(query));
+    search: function (query, page) {
+      var url = '/api/search?q=' + encodeURIComponent(query);
+      if (page) url += '&page=' + page;
+      return request('GET', url);
     },
 
     triggerScan: function () {
