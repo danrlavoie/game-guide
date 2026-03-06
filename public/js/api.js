@@ -2,6 +2,7 @@ var API = (function () {
   function request(method, url, body) {
     var options = {
       method: method,
+      credentials: 'same-origin',
       headers: {},
     };
 
@@ -66,7 +67,9 @@ var API = (function () {
     },
 
     getTextContent: function (docId) {
-      return fetch('/api/documents/' + docId + '/content').then(function (res) {
+      return fetch('/api/documents/' + docId + '/content', {
+        credentials: 'same-origin',
+      }).then(function (res) {
         if (!res.ok) {
           return res.json().then(function (data) {
             throw new Error(data.error || 'Request failed');
