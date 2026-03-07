@@ -218,26 +218,26 @@ Favorites are per-device. The document list, detail, search, and recent APIs att
 
 ## API Endpoints
 
-| Method  | Path                                       | Purpose                                                       |
-| ------- | ------------------------------------------ | ------------------------------------------------------------- |
-| GET     | `/api/documents`                           | List documents + subfolders (paginated, filterable by folder) |
-| GET     | `/api/documents?recent=true`               | Recently viewed by this device                                |
-| GET     | `/api/documents/:id`                       | Document detail                                               |
-| GET     | `/api/documents/:id/pages/:pageNum`        | Rendered page as JPEG                                         |
-| GET     | `/api/documents/:id/thumbnail`             | Thumbnail image (200px wide)                                  |
-| GET     | `/api/documents/:id/content`               | Raw text content (TXT files only)                             |
-| GET     | `/api/documents/:id/download`              | Download original file                                        |
+| Method  | Path                                             | Purpose                                                             |
+| ------- | ------------------------------------------------ | ------------------------------------------------------------------- |
+| GET     | `/api/documents`                                 | List documents + subfolders (paginated, filterable by folder)       |
+| GET     | `/api/documents?recent=true`                     | Recently viewed by this device                                      |
+| GET     | `/api/documents/:id`                             | Document detail                                                     |
+| GET     | `/api/documents/:id/pages/:pageNum`              | Rendered page as JPEG                                               |
+| GET     | `/api/documents/:id/thumbnail`                   | Thumbnail image (200px wide)                                        |
+| GET     | `/api/documents/:id/content`                     | Raw text content (TXT files only)                                   |
+| GET     | `/api/documents/:id/download`                    | Download original file                                              |
 | GET     | `/api/search?q=term&page=1&limit=50&folder=path` | Search by filename/path (paginated, optional folder subtree filter) |
-| GET/PUT | `/api/documents/:id/progress`              | Read/save reading progress                                    |
-| GET     | `/api/documents/:id/bookmarks`             | List bookmarks for current device                             |
-| POST    | `/api/documents/:id/bookmarks`             | Add bookmark (`{ page_number, label? }`)                      |
-| PUT     | `/api/documents/:id/bookmarks/:bookmarkId` | Update bookmark label (`{ label }`)                           |
-| DELETE  | `/api/documents/:id/bookmarks/:bookmarkId` | Delete a bookmark                                             |
-| GET     | `/api/documents/:id/settings`              | Get document settings for current device                      |
-| PUT     | `/api/documents/:id/settings`              | Upsert a document setting (`{ key, value }`)                  |
-| GET     | `/api/settings`                            | Get all settings for current device                           |
-| PUT     | `/api/settings`                            | Upsert a setting (`{ key, value }`)                           |
-| GET     | `/api/favorites`                           | List all favorites for current device                         |
-| POST    | `/api/documents/:id/favorite`              | Add document to favorites                                     |
-| DELETE  | `/api/documents/:id/favorite`              | Remove document from favorites                                |
-| POST    | `/api/scan`                                | Trigger directory re-scan                                     |
+| GET/PUT | `/api/documents/:id/progress`                    | Read/save reading progress                                          |
+| GET     | `/api/documents/:id/bookmarks`                   | List bookmarks for current device                                   |
+| POST    | `/api/documents/:id/bookmarks`                   | Add bookmark (`{ page_number, label? }`)                            |
+| PUT     | `/api/documents/:id/bookmarks/:bookmarkId`       | Update bookmark label (`{ label }`)                                 |
+| DELETE  | `/api/documents/:id/bookmarks/:bookmarkId`       | Delete a bookmark                                                   |
+| GET     | `/api/documents/:id/settings`                    | Get document settings for current device                            |
+| PUT     | `/api/documents/:id/settings`                    | Upsert a document setting (`{ key, value }`)                        |
+| GET     | `/api/settings`                                  | Get all settings for current device                                 |
+| PUT     | `/api/settings`                                  | Upsert a setting (`{ key, value }`)                                 |
+| GET     | `/api/favorites`                                 | List all favorites for current device                               |
+| POST    | `/api/documents/:id/favorite`                    | Add document to favorites                                           |
+| DELETE  | `/api/documents/:id/favorite`                    | Remove document from favorites                                      |
+| POST    | `/api/scan`                                      | Trigger directory re-scan                                           |

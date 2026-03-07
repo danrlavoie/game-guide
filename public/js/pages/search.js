@@ -4,6 +4,7 @@ var SearchPage = (function () {
   var currentQuery = '';
 
   function render(container, query) {
+    clearTimeout(debounceTimer);
     currentPage = 1;
     currentQuery = '';
 

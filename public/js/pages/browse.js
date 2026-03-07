@@ -6,6 +6,7 @@ var BrowsePage = (function () {
   var debounceTimer = null;
 
   function render(container, folderPath, query) {
+    clearTimeout(debounceTimer);
     currentFolder = folderPath || '';
     currentPage = 1;
     searchQuery = query || '';
@@ -17,11 +18,11 @@ var BrowsePage = (function () {
       '<h1>Browse</h1>' +
       '<span></span>' +
       '</div>' +
-      '<div class="browse-search-bar" style="padding: 12px 16px; background: var(--bg-secondary); border-bottom: 1px solid var(--input-border);">' +
-      '<input type="search" id="browse-search" placeholder="Search in this folder..." style="padding: 10px 12px; border: 1px solid var(--input-border); border-radius: var(--radius-md); font-size: 16px; background: var(--bg-tertiary); color: var(--text-primary); box-shadow: inset 0 1px 3px rgba(60, 42, 26, 0.08);" value="' +
+      '<div class="browse-search-bar">' +
+      '<input type="search" id="browse-search" placeholder="Search in this folder..." value="' +
       escapeHtml(searchQuery) +
       '">' +
-      '<a id="search-all-btn" class="btn btn-secondary browse-search-all" href="#/search" style="display: none;">Search All</a>' +
+      '<a id="search-all-btn" class="btn btn-secondary browse-search-all hidden" href="#/search">Search All</a>' +
       '</div>' +
       '<div class="page">' +
       '<div id="breadcrumbs"></div>' +
@@ -43,7 +44,7 @@ var BrowsePage = (function () {
           searchQuery = q;
           searchPage = 1;
           searchAllBtn.href = '#/search?q=' + encodeURIComponent(q);
-          searchAllBtn.style.display = '';
+          searchAllBtn.className = 'btn btn-secondary browse-search-all';
           performBrowseSearch();
           history.replaceState(
             null,
@@ -55,8 +56,9 @@ var BrowsePage = (function () {
           );
         } else {
           searchQuery = '';
-          searchAllBtn.style.display = 'none';
+          searchAllBtn.className = 'btn btn-secondary browse-search-all hidden';
           currentPage = 1;
+          document.getElementById('load-more-section').innerHTML = '';
           loadFolder();
           history.replaceState(
             null,
@@ -70,7 +72,7 @@ var BrowsePage = (function () {
     // Show Search All button if initial query present
     if (searchQuery && searchQuery.length >= 2) {
       searchAllBtn.href = '#/search?q=' + encodeURIComponent(searchQuery);
-      searchAllBtn.style.display = '';
+      searchAllBtn.className = 'btn btn-secondary browse-search-all';
       performBrowseSearch();
     } else {
       loadFolder();
@@ -107,6 +109,31 @@ var BrowsePage = (function () {
     el.innerHTML = crumbs;
   }
 
+  function renderFolders(folders) {
+    var foldersEl = document.getElementById('folders-section');
+    if (!foldersEl) return;
+
+    if (!folders || folders.length === 0) {
+      foldersEl.innerHTML = '';
+      return;
+    }
+
+    var html = '<div class="folder-list">';
+    folders.forEach(function (folder) {
+      html +=
+        '<div class="folder-item" onclick="window.location.hash=\'#/browse/' +
+        encodeURI(folder.path) +
+        '\'">' +
+        '<span class="folder-icon"><i class="fa fa-folder"></i></span>' +
+        '<span class="folder-name">' +
+        escapeHtml(folder.name) +
+        '</span>' +
+        '</div>';
+    });
+    html += '</div>';
+    foldersEl.innerHTML = html;
+  }
+
   function loadFolder() {
     var docsSection = document.getElementById('docs-section');
     if (!docsSection) return;
@@ -117,32 +144,14 @@ var BrowsePage = (function () {
 
     API.getDocuments({ folder: currentFolder, page: currentPage, limit: 50 })
       .then(function (data) {
-        // Render folders (only on first page)
         if (currentPage === 1) {
-          var foldersEl = document.getElementById('folders-section');
-          if (foldersEl && data.folders && data.folders.length > 0) {
-            var html = '<div class="folder-list">';
-            data.folders.forEach(function (folder) {
-              html +=
-                '<div class="folder-item" onclick="window.location.hash=\'#/browse/' +
-                encodeURI(folder.path) +
-                '\'">' +
-                '<span class="folder-icon"><i class="fa fa-folder"></i></span>' +
-                '<span class="folder-name">' +
-                escapeHtml(folder.name) +
-                '</span>' +
-                '</div>';
-            });
-            html += '</div>';
-            foldersEl.innerHTML = html;
-          }
-
+          renderFolders(data.folders);
           docsSection.innerHTML = '';
         }
 
         // Render documents
         if (data.documents.length === 0 && currentPage === 1) {
-          foldersEl = document.getElementById('folders-section');
+          var foldersEl = document.getElementById('folders-section');
           var hasFolders = foldersEl && foldersEl.innerHTML.trim() !== '';
           if (!hasFolders) {
             docsSection.innerHTML =
@@ -201,27 +210,8 @@ var BrowsePage = (function () {
 
     API.search(searchQuery, searchPage, currentFolder)
       .then(function (data) {
-        // Render folders on first page
         if (searchPage === 1) {
-          var foldersEl = document.getElementById('folders-section');
-          if (foldersEl && data.folders && data.folders.length > 0) {
-            var html = '<div class="folder-list">';
-            data.folders.forEach(function (folder) {
-              html +=
-                '<div class="folder-item" onclick="window.location.hash=\'#/browse/' +
-                encodeURI(folder.path) +
-                '\'">' +
-                '<span class="folder-icon"><i class="fa fa-folder"></i></span>' +
-                '<span class="folder-name">' +
-                escapeHtml(folder.name) +
-                '</span>' +
-                '</div>';
-            });
-            html += '</div>';
-            foldersEl.innerHTML = html;
-          } else if (foldersEl) {
-            foldersEl.innerHTML = '';
-          }
+          renderFolders(data.folders);
         }
 
         if (data.documents.length === 0 && searchPage === 1) {
