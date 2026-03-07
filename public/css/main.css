@@ -78,6 +78,26 @@
   box-shadow: 0 0 0 3px rgba(200, 132, 42, 0.2);
 }
 
+/* Browse search bar */
+.browse-search-bar {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+}
+
+.browse-search-bar input {
+  -webkit-flex: 1;
+  flex: 1;
+}
+
+.browse-search-all {
+  margin-left: 8px;
+  white-space: nowrap;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
 /* Section headers */
 .section-title {
   font-size: 16px;

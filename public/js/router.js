@@ -20,8 +20,20 @@ var Router = (function () {
     if (hash === '#/' || hash === '' || hash === '#') {
       HomePage.render(app);
     } else if (hash.indexOf('#/browse/') === 0 || hash === '#/browse') {
-      var folderPath = decodeURI(hash.substring('#/browse/'.length));
-      BrowsePage.render(app, folderPath);
+      var browseRemainder = hash.substring('#/browse/'.length);
+      var browseQIndex = browseRemainder.indexOf('?');
+      var folderPath =
+        browseQIndex >= 0
+          ? decodeURI(browseRemainder.substring(0, browseQIndex))
+          : decodeURI(browseRemainder);
+      var browseQueryMatch =
+        browseQIndex >= 0
+          ? browseRemainder.substring(browseQIndex).match(/[?&]q=([^&]*)/)
+          : null;
+      var browseQuery = browseQueryMatch
+        ? decodeURIComponent(browseQueryMatch[1])
+        : '';
+      BrowsePage.render(app, folderPath, browseQuery);
     } else if (hash.indexOf('#/read/') === 0) {
       var txtDocId = hash.substring('#/read/'.length);
       currentCleanup = TextViewerPage.cleanup;

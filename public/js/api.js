@@ -58,9 +58,11 @@ var API = (function () {
       });
     },
 
-    search: function (query, page) {
+    search: function (query, page, folder) {
       var url = '/api/search?q=' + encodeURIComponent(query);
       if (page) url += '&page=' + page;
+      if (folder !== undefined && folder !== '')
+        url += '&folder=' + encodeURIComponent(folder);
       return request('GET', url);
     },
 

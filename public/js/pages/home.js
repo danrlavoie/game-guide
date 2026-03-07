@@ -19,10 +19,23 @@ var HomePage = (function () {
       '</div>' +
       '</div>';
 
-    // Search input
+    // Search input — as-you-type with debounce
     var searchInput = document.getElementById('home-search');
+    var homeDebounce = null;
+
+    searchInput.addEventListener('input', function () {
+      clearTimeout(homeDebounce);
+      homeDebounce = setTimeout(function () {
+        var q = searchInput.value.trim();
+        if (q.length >= 2) {
+          window.location.hash = '#/search?q=' + encodeURIComponent(q);
+        }
+      }, 500);
+    });
+
     searchInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.keyCode === 13) {
+        clearTimeout(homeDebounce);
         var q = searchInput.value.trim();
         if (q) {
           window.location.hash = '#/search?q=' + encodeURIComponent(q);

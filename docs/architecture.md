@@ -227,7 +227,7 @@ Favorites are per-device. The document list, detail, search, and recent APIs att
 | GET     | `/api/documents/:id/thumbnail`             | Thumbnail image (200px wide)                                  |
 | GET     | `/api/documents/:id/content`               | Raw text content (TXT files only)                             |
 | GET     | `/api/documents/:id/download`              | Download original file                                        |
-| GET     | `/api/search?q=term&page=1&limit=50`       | Search by filename/path (paginated)                           |
+| GET     | `/api/search?q=term&page=1&limit=50&folder=path` | Search by filename/path (paginated, optional folder subtree filter) |
 | GET/PUT | `/api/documents/:id/progress`              | Read/save reading progress                                    |
 | GET     | `/api/documents/:id/bookmarks`             | List bookmarks for current device                             |
 | POST    | `/api/documents/:id/bookmarks`             | Add bookmark (`{ page_number, label? }`)                      |

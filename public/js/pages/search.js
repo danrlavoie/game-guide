@@ -39,7 +39,7 @@ var SearchPage = (function () {
           document.getElementById('search-results').innerHTML = '';
           document.getElementById('load-more-section').innerHTML = '';
         }
-      }, 300);
+      }, 500);
     });
 
     // Focus input

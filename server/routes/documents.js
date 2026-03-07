@@ -6,6 +6,7 @@ var { getDb } = require('../db');
 var config = require('../config');
 var renderer = require('../services/renderer');
 var thumbnail = require('../services/thumbnail');
+var { getChildFolders } = require('../utils/folders');
 var log = require('../logger').child({ component: 'routes.documents' });
 
 // List documents and subfolders
@@ -66,33 +67,7 @@ router.get('/', function (req, res) {
   var offset = (page - 1) * limit;
 
   // Get unique immediate child folders
-  var allDocs = db
-    .prepare(
-      '\
-    SELECT parent_folder FROM documents WHERE parent_folder LIKE ? \
-    GROUP BY parent_folder\
-  '
-    )
-    .all(folder + '%');
-
-  var folderSet = {};
-  var prefix = folder ? folder + '/' : '';
-  allDocs.forEach(function (row) {
-    var relative = row.parent_folder;
-    if (relative === folder) return; // Same folder, not a subfolder
-    var afterPrefix = folder ? relative.substring(prefix.length) : relative;
-    if (!afterPrefix) return;
-    var firstPart = afterPrefix.split('/')[0];
-    if (firstPart) {
-      folderSet[firstPart] = true;
-    }
-  });
-
-  var folders = Object.keys(folderSet)
-    .sort()
-    .map(function (name) {
-      return { name: name, path: prefix + name };
-    });
+  var folders = getChildFolders(db, folder);
 
   // Get documents in this exact folder
   var documents = db

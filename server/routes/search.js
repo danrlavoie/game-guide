@@ -1,11 +1,12 @@
 var express = require('express');
 var router = express.Router();
 var { getDb } = require('../db');
+var { getChildFolders } = require('../utils/folders');
 
 router.get('/', function (req, res) {
   var q = req.query.q;
   if (!q || q.length < 2) {
-    return res.json({ documents: [] });
+    return res.json({ documents: [], folders: [] });
   }
 
   var db = getDb();
@@ -13,26 +14,40 @@ router.get('/', function (req, res) {
   var page = parseInt(req.query.page, 10) || 1;
   var offset = (page - 1) * limit;
   var searchTerm = '%' + q + '%';
+  var folder = req.query.folder;
 
-  var total = db
-    .prepare(
-      '\
-    SELECT COUNT(*) as count FROM documents \
-    WHERE file_name LIKE ? OR file_path LIKE ?\
-  '
-    )
-    .get(searchTerm, searchTerm).count;
+  var whereClause;
+  var countParams;
+  var queryParams;
 
-  var documents = db
-    .prepare(
-      '\
-    SELECT * FROM documents \
-    WHERE file_name LIKE ? OR file_path LIKE ? \
-    ORDER BY file_name \
-    LIMIT ? OFFSET ?\
-  '
-    )
-    .all(searchTerm, searchTerm, limit, offset);
+  if (folder !== undefined && folder !== '') {
+    var folderTerm = folder + '%';
+    whereClause =
+      'WHERE (file_name LIKE ? OR file_path LIKE ?) AND parent_folder LIKE ?';
+    countParams = [searchTerm, searchTerm, folderTerm];
+    queryParams = [searchTerm, searchTerm, folderTerm, limit, offset];
+  } else {
+    whereClause = 'WHERE file_name LIKE ? OR file_path LIKE ?';
+    countParams = [searchTerm, searchTerm];
+    queryParams = [searchTerm, searchTerm, limit, offset];
+  }
+
+  var countStmt = db.prepare(
+    'SELECT COUNT(*) as count FROM documents ' + whereClause
+  );
+  var total = countStmt.get.apply(countStmt, countParams).count;
+
+  var queryStmt = db.prepare(
+    'SELECT * FROM documents ' +
+      whereClause +
+      ' ORDER BY file_name LIMIT ? OFFSET ?'
+  );
+  var documents = queryStmt.all.apply(queryStmt, queryParams);
+
+  var folders = [];
+  if (folder !== undefined && folder !== '') {
+    folders = getChildFolders(db, folder);
+  }
 
   // Get reading progress for results
   if (documents.length > 0) {
@@ -86,6 +101,8 @@ router.get('/', function (req, res) {
 
   res.json({
     documents: documents,
+    folders: folders,
+    folder: folder || '',
     query: q,
     total: total,
     page: page,

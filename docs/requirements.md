@@ -18,7 +18,10 @@
 - Thumbnail previews for each document
 - Document metadata display (name, page count, file size)
 - Recently viewed documents on home page (5 most recent)
-- Search documents by filename
+- Search documents by filename (as-you-type with 500ms debounce)
+- Folder-scoped search from the browse page (search within current folder subtree)
+- "Search All" button in browse search to jump to global search
+- Home page search navigates to search page after debounce
 
 ### Document Viewer
 
