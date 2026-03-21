@@ -5,7 +5,11 @@ sharp.cache(false); // Prevent decoded image cache from accumulating over large 
 var config = require('../config');
 var { getDb } = require('../db');
 var { execAsync, shellEscape } = require('../utils/exec');
-var { isZipFile, isRarFile } = require('../utils/archive');
+var {
+  isZipFile,
+  isRarFile,
+  findImagesBufferSafe,
+} = require('../utils/archive');
 var log = require('../logger').child({ component: 'thumbnail' });
 
 function getThumbnail(doc, fullPath) {
@@ -127,19 +131,19 @@ function generateCbzThumbnail(cbzPath, thumbPath) {
     )
       .catch(function () {
         // Exit code 1 = warning (e.g. Unicode issues) but file may have extracted
-        if (findFirstImageInDir(tempDir)) return;
+        if (findImagesBufferSafe(tempDir).length > 0) return;
         // Filename encoding mismatch — extract all files as fallback
         return execAsync(
           'unzip -o -j "' + escapedPath + '" -d "' + tempDir + '"'
         );
       })
       .then(function () {
-        var extractedFile = findFirstImageInDir(tempDir);
-        if (!extractedFile) {
+        var images = findImagesBufferSafe(tempDir);
+        if (images.length === 0) {
           throw new Error('No images extracted from CBZ');
         }
 
-        return sharp(path.join(tempDir, extractedFile))
+        return sharp(fs.readFileSync(images[0].bufPath))
           .resize(config.thumbnailWidth)
           .jpeg({ quality: 80 })
           .toFile(thumbPath)
@@ -201,9 +205,12 @@ function generateCbrThumbnail(cbrPath, thumbPath) {
         tempDir +
         '/"'
     ).then(function () {
-      var extractedPath = path.join(tempDir, path.basename(firstImage));
+      var images = findImagesBufferSafe(tempDir);
+      if (images.length === 0) {
+        throw new Error('No images extracted from CBR');
+      }
 
-      return sharp(extractedPath)
+      return sharp(fs.readFileSync(images[0].bufPath))
         .resize(config.thumbnailWidth)
         .jpeg({ quality: 80 })
         .toFile(thumbPath)
@@ -213,18 +220,6 @@ function generateCbrThumbnail(cbrPath, thumbPath) {
         });
     });
   });
-}
-
-function findFirstImageInDir(dir) {
-  var files = fs
-    .readdirSync(dir)
-    .filter(function (f) {
-      return (
-        /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(f) && !f.startsWith('__MACOSX')
-      );
-    })
-    .sort();
-  return files.length > 0 ? files[0] : null;
 }
 
 function generateBatch(docs) {

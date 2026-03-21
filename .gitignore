@@ -1,5 +1,6 @@
 node_modules/
 data/
+test-documents/
 *.log
 .env
 .DS_Store

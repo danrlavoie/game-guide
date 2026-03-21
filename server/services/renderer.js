@@ -2,7 +2,11 @@ var fs = require('fs');
 var path = require('path');
 var config = require('../config');
 var { execAsync, shellEscape } = require('../utils/exec');
-var { isZipFile, isRarFile } = require('../utils/archive');
+var {
+  isZipFile,
+  isRarFile,
+  findImagesBufferSafe,
+} = require('../utils/archive');
 
 function getPage(doc, fullPath, pageNum) {
   var cacheDir = path.join(config.pagesPath, String(doc.id));
@@ -113,36 +117,58 @@ function renderCbzPage(cbzPath, cacheDir, pageNum) {
     var targetFile = imageFiles[pageNum - 1];
     var escapedTarget = shellEscape(targetFile);
 
-    // Extract single file
+    // Extract single file to a temp subdir to isolate from cached pages
+    var extractDir = path.join(
+      cacheDir,
+      'tmp_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8)
+    );
+    fs.mkdirSync(extractDir, { recursive: true });
+
     return execAsync(
       'unzip -o -j "' +
         escapedPath +
         '" "' +
         escapedTarget +
         '" -d "' +
-        cacheDir +
+        extractDir +
         '"'
-    ).then(function () {
-      var extractedName = path.basename(targetFile);
-      var extractedPath = path.join(cacheDir, extractedName);
-      var finalPath = path.join(cacheDir, pageNum + '.jpg');
+    )
+      .catch(function () {
+        // Exit code 1 = warning (e.g. Unicode issues) but file may have extracted
+        if (findImagesBufferSafe(extractDir).length > 0) return;
+        // Filename encoding mismatch — extract all and pick the right page
+        return execAsync(
+          'unzip -o -j "' + escapedPath + '" -d "' + extractDir + '"'
+        );
+      })
+      .then(function () {
+        var images = findImagesBufferSafe(extractDir);
+        if (images.length === 0) {
+          fs.rmSync(extractDir, { recursive: true, force: true });
+          throw new Error('No images extracted from CBZ');
+        }
 
-      // If it's already a JPEG, just rename
-      if (/\.jpe?g$/i.test(extractedName)) {
-        fs.renameSync(extractedPath, finalPath);
-        return finalPath;
-      }
+        // When fallback extracted all files, pick the right page
+        var image = images.length === 1 ? images[0] : images[pageNum - 1];
+        var finalPath = path.join(cacheDir, pageNum + '.jpg');
 
-      // Convert non-JPEG to JPEG using sharp
-      var sharp = require('sharp');
-      return sharp(extractedPath)
-        .jpeg({ quality: config.pageQuality })
-        .toFile(finalPath)
-        .then(function () {
-          fs.unlinkSync(extractedPath);
+        // If it's already a JPEG, read and write to final path
+        if (/\.jpe?g$/i.test(image.ext)) {
+          fs.writeFileSync(finalPath, fs.readFileSync(image.bufPath));
+          fs.rmSync(extractDir, { recursive: true, force: true });
           return finalPath;
-        });
-    });
+        }
+
+        // Convert non-JPEG to JPEG using sharp
+        var sharp = require('sharp');
+        return sharp(fs.readFileSync(image.bufPath))
+          .jpeg({ quality: config.pageQuality })
+          .toFile(finalPath)
+          .then(function () {
+            fs.rmSync(extractDir, { recursive: true, force: true });
+            return finalPath;
+          });
+      });
   });
 }
 
@@ -188,31 +214,43 @@ function renderCbrPage(cbrPath, cacheDir, pageNum) {
     var targetFile = imageFiles[pageNum - 1];
     var escapedTarget = shellEscape(targetFile);
 
-    // Extract single file to cache directory
+    // Extract single file to a temp subdir to isolate from cached pages
+    var extractDir = path.join(
+      cacheDir,
+      'tmp_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8)
+    );
+    fs.mkdirSync(extractDir, { recursive: true });
+
     return execAsync(
       'unrar e -o+ "' +
         escapedPath +
         '" "' +
         escapedTarget +
         '" "' +
-        cacheDir +
+        extractDir +
         '/"'
     ).then(function () {
-      var extractedName = path.basename(targetFile);
-      var extractedPath = path.join(cacheDir, extractedName);
+      var images = findImagesBufferSafe(extractDir);
+      if (images.length === 0) {
+        fs.rmSync(extractDir, { recursive: true, force: true });
+        throw new Error('No images extracted from CBR');
+      }
+
+      var image = images[0];
       var finalPath = path.join(cacheDir, pageNum + '.jpg');
 
-      if (/\.jpe?g$/i.test(extractedName)) {
-        fs.renameSync(extractedPath, finalPath);
+      if (/\.jpe?g$/i.test(image.ext)) {
+        fs.writeFileSync(finalPath, fs.readFileSync(image.bufPath));
+        fs.rmSync(extractDir, { recursive: true, force: true });
         return finalPath;
       }
 
       var sharp = require('sharp');
-      return sharp(extractedPath)
+      return sharp(fs.readFileSync(image.bufPath))
         .jpeg({ quality: config.pageQuality })
         .toFile(finalPath)
         .then(function () {
-          fs.unlinkSync(extractedPath);
+          fs.rmSync(extractDir, { recursive: true, force: true });
           return finalPath;
         });
     });

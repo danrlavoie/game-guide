@@ -34,4 +34,38 @@ function isRarFile(filePath) {
   }
 }
 
-module.exports = { isZipFile, isRarFile };
+/**
+ * Find image files in a directory using buffer-based readdirSync.
+ * Returns sorted array of { bufPath: Buffer, ext: string } objects.
+ *
+ * Standard string-based readdirSync cannot round-trip non-UTF-8 filenames
+ * (e.g. Latin-1 encoded names in archives) under POSIX locale. Buffer-based
+ * reading preserves the raw bytes so fs operations resolve correctly.
+ */
+function findImagesBufferSafe(dir) {
+  var entries = fs.readdirSync(dir, { encoding: 'buffer' });
+  var dirBuf = Buffer.from(dir + '/');
+
+  var images = [];
+  entries.forEach(function (entry) {
+    // Decode as latin1 for extension/name checks — every byte maps 1:1
+    var name = entry.toString('latin1');
+    if (
+      /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(name) &&
+      name.indexOf('__MACOSX') === -1
+    ) {
+      images.push({
+        bufPath: Buffer.concat([dirBuf, entry]),
+        ext: name.match(/\.[^.]+$/)[0],
+      });
+    }
+  });
+
+  images.sort(function (a, b) {
+    return a.bufPath.compare(b.bufPath);
+  });
+
+  return images;
+}
+
+module.exports = { isZipFile, isRarFile, findImagesBufferSafe };

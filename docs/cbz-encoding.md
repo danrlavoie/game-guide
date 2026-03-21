@@ -82,10 +82,28 @@ This is wasteful for large archives, but it only triggers as a fallback when the
 
 Extracting all files from a large archive (some CBZ files are 500MB+) when we only need one image would be slow and disk-hungry. The targeted extraction is still the happy path — the fallback is there for the edge cases.
 
+## The POSIX Locale Problem
+
+The "scan tempdir" approach (step 5 above) has a further subtlety in Docker containers. The `node:20-slim` image defaults to POSIX locale (`LANG=` empty, `LC_ALL=POSIX`). In this locale, Node.js's `fs.readdirSync` returns filenames as JavaScript strings — but non-ASCII bytes (e.g., Latin-1 `é` = `0xE9`) can't round-trip through JavaScript's UTF-16 string encoding back to the filesystem. The result: `readdirSync` lists a file, but `existsSync` on the returned string says it doesn't exist.
+
+This affects both `unzip` and `unrar` extracted files when the archive contains non-UTF-8 filenames (common in archives with Spanish, Japanese, or other non-English metadata).
+
+### The Fix
+
+Use `fs.readdirSync(dir, { encoding: 'buffer' })` to get raw byte sequences instead of strings. Buffer-based paths preserve the exact bytes and round-trip correctly through `fs` operations. The shared helper `findImagesBufferSafe()` in `server/utils/archive.js` implements this:
+
+1. Lists directory entries as Buffers
+2. Decodes each as Latin-1 (lossless byte-to-codepoint mapping) for extension/name filtering
+3. Returns Buffer paths that can be passed to `fs.readFileSync` or `fs.renameSync`
+
+For thumbnail generation, the image data is read into a Buffer via the buffer path and passed directly to `sharp(buffer)`. For page rendering, the extracted file is read via buffer path and written to an ASCII-named cache path (e.g., `1.jpg`).
+
+This approach applies to both CBZ and CBR extraction in both `thumbnail.js` and `renderer.js`.
+
 ## Lessons
 
 1. **Don't round-trip text through lossy transformations.** Parsing `unzip -l` output and feeding it back to `unzip` is a round-trip through the terminal's character encoding. The displayed text isn't necessarily what the tool expects as input.
 
 2. **Non-zero exit codes don't always mean failure.** Many Unix tools use exit codes to signal warnings, partial success, or informational conditions. `unzip` exit code 1 means "success with warnings." Always check what a tool's exit codes actually mean before treating non-zero as an error.
 
-3. **When in doubt, look at what's on disk.** Instead of predicting filenames through string manipulation, scan the directory for what actually appeared. The filesystem is the source of truth.
+3. **When in doubt, look at what's on disk — but use buffer-safe reads.** Instead of predicting filenames through string manipulation, scan the directory for what actually appeared. The filesystem is the source of truth. However, in non-UTF-8 locales (like Docker's default POSIX), use `fs.readdirSync(dir, { encoding: 'buffer' })` to avoid string encoding corruption of non-ASCII filenames.
