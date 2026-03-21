@@ -14,7 +14,13 @@ app.use(cookieParser());
 app.use(deviceMiddleware);
 
 // Static files
-app.use(express.static(path.join(__dirname, '..', 'public'), { etag: false, lastModified: false, maxAge: 0 }));
+app.use(
+  express.static(path.join(__dirname, '..', 'public'), {
+    etag: false,
+    lastModified: false,
+    maxAge: 0,
+  })
+);
 
 // API routes
 app.use('/api/documents', require('./routes/documents'));
