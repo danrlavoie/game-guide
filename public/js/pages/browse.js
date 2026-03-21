@@ -6,7 +6,12 @@ var BrowsePage = (function () {
   var debounceTimer = null;
 
   function encodePath(p) {
-    return p.split('/').map(encodeURIComponent).join('/');
+    return p
+      .split('/')
+      .map(function (s) {
+        return encodeURIComponent(s).replace(/'/g, '%27');
+      })
+      .join('/');
   }
 
   function render(container, folderPath, query) {
