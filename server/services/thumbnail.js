@@ -88,7 +88,9 @@ function generateCbzThumbnail(cbzPath, thumbPath) {
     var imageFiles = [];
 
     lines.forEach(function (line) {
-      var match = line.match(/\d+\s+\d{2}-\d{2}-\d{2,4}\s+\d{2}:\d{2}\s+(.+)/);
+      var match = line.match(
+        /\d+\s+\d{2,4}-\d{2}-\d{2,4}\s+\d{2}:\d{2}\s+(.+)/
+      );
       if (match) {
         var filename = match[1].trim();
         if (
@@ -104,7 +106,11 @@ function generateCbzThumbnail(cbzPath, thumbPath) {
 
     if (imageFiles.length === 0) {
       fs.rmSync(tempDir, { recursive: true, force: true });
-      throw new Error('No images found in CBZ');
+      throw new Error(
+        'No images found in CBZ (parsed 0 image entries from ' +
+          lines.length +
+          ' listing lines)'
+      );
     }
 
     var firstImage = imageFiles[0];
@@ -176,7 +182,11 @@ function generateCbrThumbnail(cbrPath, thumbPath) {
 
     if (imageFiles.length === 0) {
       fs.rmSync(tempDir, { recursive: true, force: true });
-      throw new Error('No images found in CBR');
+      throw new Error(
+        'No images found in CBR (parsed 0 image entries from ' +
+          lines.length +
+          ' listing lines)'
+      );
     }
 
     var firstImage = imageFiles[0];

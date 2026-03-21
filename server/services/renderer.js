@@ -80,7 +80,9 @@ function renderCbzPage(cbzPath, cacheDir, pageNum) {
     var imageFiles = [];
 
     lines.forEach(function (line) {
-      var match = line.match(/\d+\s+\d{2}-\d{2}-\d{2,4}\s+\d{2}:\d{2}\s+(.+)/);
+      var match = line.match(
+        /\d+\s+\d{2,4}-\d{2}-\d{2,4}\s+\d{2}:\d{2}\s+(.+)/
+      );
       if (match) {
         var filename = match[1].trim();
         if (
@@ -93,6 +95,14 @@ function renderCbzPage(cbzPath, cacheDir, pageNum) {
     });
 
     imageFiles.sort();
+
+    if (imageFiles.length === 0) {
+      throw new Error(
+        'No images found in CBZ (parsed 0 image entries from ' +
+          lines.length +
+          ' listing lines)'
+      );
+    }
 
     if (pageNum < 1 || pageNum > imageFiles.length) {
       throw new Error(
@@ -160,6 +170,14 @@ function renderCbrPage(cbrPath, cacheDir, pageNum) {
     });
 
     imageFiles.sort();
+
+    if (imageFiles.length === 0) {
+      throw new Error(
+        'No images found in CBR (parsed 0 image entries from ' +
+          lines.length +
+          ' listing lines)'
+      );
+    }
 
     if (pageNum < 1 || pageNum > imageFiles.length) {
       throw new Error(
