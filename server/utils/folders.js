@@ -6,13 +6,12 @@ function getChildFolders(db, folder) {
     GROUP BY parent_folder\
   '
     )
-    .all(folder + '%');
+    .all(folder ? folder + '/%' : '%');
 
   var folderSet = {};
   var prefix = folder ? folder + '/' : '';
   allDocs.forEach(function (row) {
     var relative = row.parent_folder;
-    if (relative === folder) return;
     var afterPrefix = folder ? relative.substring(prefix.length) : relative;
     if (!afterPrefix) return;
     var firstPart = afterPrefix.split('/')[0];
