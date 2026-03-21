@@ -24,8 +24,8 @@ var Router = (function () {
       var browseQIndex = browseRemainder.indexOf('?');
       var folderPath =
         browseQIndex >= 0
-          ? decodeURI(browseRemainder.substring(0, browseQIndex))
-          : decodeURI(browseRemainder);
+          ? decodeURIComponent(browseRemainder.substring(0, browseQIndex))
+          : decodeURIComponent(browseRemainder);
       var browseQueryMatch =
         browseQIndex >= 0
           ? browseRemainder.substring(browseQIndex).match(/[?&]q=([^&]*)/)

@@ -5,6 +5,10 @@ var BrowsePage = (function () {
   var searchPage = 1;
   var debounceTimer = null;
 
+  function encodePath(p) {
+    return p.split('/').map(encodeURIComponent).join('/');
+  }
+
   function render(container, folderPath, query) {
     clearTimeout(debounceTimer);
     currentFolder = folderPath || '';
@@ -50,7 +54,7 @@ var BrowsePage = (function () {
             null,
             '',
             '#/browse/' +
-              encodeURI(currentFolder) +
+              encodePath(currentFolder) +
               '?q=' +
               encodeURIComponent(q)
           );
@@ -63,7 +67,7 @@ var BrowsePage = (function () {
           history.replaceState(
             null,
             '',
-            '#/browse/' + encodeURI(currentFolder)
+            '#/browse/' + encodePath(currentFolder)
           );
         }
       }, 500);
@@ -97,7 +101,7 @@ var BrowsePage = (function () {
         } else {
           crumbs +=
             '<a href="#/browse/' +
-            encodeURI(accumulated) +
+            encodePath(accumulated) +
             '">' +
             escapeHtml(part) +
             '</a>';
@@ -122,7 +126,7 @@ var BrowsePage = (function () {
     folders.forEach(function (folder) {
       html +=
         '<div class="folder-item" onclick="window.location.hash=\'#/browse/' +
-        encodeURI(folder.path) +
+        encodePath(folder.path) +
         '\'">' +
         '<span class="folder-icon"><i class="fa fa-folder"></i></span>' +
         '<span class="folder-name">' +
