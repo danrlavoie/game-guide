@@ -40,7 +40,7 @@ router.get('/', function (req, res) {
   var queryStmt = db.prepare(
     'SELECT * FROM documents ' +
       whereClause +
-      ' ORDER BY file_name LIMIT ? OFFSET ?'
+      ' ORDER BY file_name COLLATE NOCASE LIMIT ? OFFSET ?'
   );
   var documents = queryStmt.all.apply(queryStmt, queryParams);
 

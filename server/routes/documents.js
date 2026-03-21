@@ -75,7 +75,7 @@ router.get('/', function (req, res) {
       '\
     SELECT * FROM documents \
     WHERE parent_folder = ? \
-    ORDER BY file_name \
+    ORDER BY file_name COLLATE NOCASE \
     LIMIT ? OFFSET ?\
   '
     )

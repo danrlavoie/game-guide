@@ -21,7 +21,9 @@ function getChildFolders(db, folder) {
   });
 
   return Object.keys(folderSet)
-    .sort()
+    .sort(function (a, b) {
+      return a.localeCompare(b, undefined, { sensitivity: 'base' });
+    })
     .map(function (name) {
       return { name: name, path: prefix + name };
     });
